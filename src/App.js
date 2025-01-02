@@ -5,6 +5,7 @@ import Signup from "./pages/signup/Signup";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Sidebar from "./components/sidebar/Sidebar";
+import Profile from "./pages/profile/Profile";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );

@@ -27,3 +27,11 @@ export const registerUserApi = (data) => Api.post("/api/user/create", data);
 
 // Login API
 export const loginUserApi = (data) => Api.post("/api/user/login", data);
+
+// get single profile api
+export const getSingleprofileApi = () =>
+  Api.get("/api/user/get_single_profile", config);
+
+// update profile api
+export const updateProfileApi = (data) =>
+  Api.put("/api/user/update_profile", data, jsonConfig);

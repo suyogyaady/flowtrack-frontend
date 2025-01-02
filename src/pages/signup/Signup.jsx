@@ -31,12 +31,14 @@ const Signup = () => {
   const [username, setUsername] = useState("");
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
+  const [budget, setBudget] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [usernameError, setUsernameError] = useState("");
   const [titleError, setTitleError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [budgetError, setBudgetError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
@@ -62,6 +64,12 @@ const Signup = () => {
       isValid = false;
     } else {
       setEmailError("");
+    }
+    if (budget.trim() === "") {
+      setBudgetError("Budget is required!");
+      isValid = false;
+    } else {
+      setBudgetError("");
     }
 
     if (password.trim() === "") {
@@ -89,7 +97,7 @@ const Signup = () => {
 
     if (!validate()) return;
 
-    const data = { username, title, email, password };
+    const data = { username, title, email, password, budget };
 
     registerUserApi(data)
       .then((res) => {
@@ -197,6 +205,25 @@ const Signup = () => {
                   </div>
                   {titleError && (
                     <small className="text-danger">{titleError}</small>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <div className="form-floating">
+                    <input
+                      type="text"
+                      className="form-control border-0 border-bottom rounded-0"
+                      id="budgetInput"
+                      placeholder="Budget"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
+                    />
+                    <label htmlFor="budgetInput" style={{ color: "#666" }}>
+                      Budget
+                    </label>
+                  </div>
+                  {budgetError && (
+                    <small className="text-danger">{budgetError}</small>
                   )}
                 </div>
 
