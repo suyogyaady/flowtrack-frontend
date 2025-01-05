@@ -1,0 +1,131 @@
+.help-page {
+    padding: 3rem 1rem;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.header-section {
+    margin-bottom: 4rem;
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.search-bar {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-bar .form-control {
+    border-left: none;
+    height: 50px;
+}
+
+.search-bar .input-group-text {
+    background-color: white;
+    border-right: none;
+}
+
+.step-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.support-button {
+    width: 100%;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.support-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e7f1ff;
+    color: #0056b3;
+}
+
+.badge {
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .help-page {
+        padding: 2rem 0.5rem;
+    }
+
+    .header-section {
+        margin-bottom: 2rem;
+    }
+
+    .support-button {
+        height: 80px;
+    }
+}
+
+/* Animation for contact form */
+.support-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.support-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.support-button:hover::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Smooth transitions */
+.accordion-body {
+    transition: all 0.3s ease-in-out;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+    border-color: #80bdff;
+}

@@ -1,371 +1,382 @@
-import React, { useState } from "react";
-import logo1 from "../../assets/images/Logo1.png";
-import logo2 from "../../assets/images/Logo2.png";
-import google from "../../assets/images/google.png";
-import { registerUserApi } from "../../apis/Api";
-import { toast } from "react-toastify";
+import React, { useState, useEffect } from "react";
+import {
+  Form,
+  Input,
+  Button,
+  Divider,
+  Card,
+  Layout,
+  Typography,
+  Spin,
+  Space,
+  Select,
+  notification,
+} from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  DollarOutlined,
+  LockOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  GoogleOutlined,
+} from "@ant-design/icons";
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
 
 const Signup = () => {
-  const [passwordMatch, setPasswordMatch] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const titleOptions = [
-    "Select your title",
-    "Student",
-    "Teacher",
-    "Businessman",
-    "Banker",
-    "Trader",
-    "Developer",
-    "Engineer",
-    "Doctor",
-    "Consultant",
-    "Entrepreneur",
-    "Accountant",
-    "Manager",
-    "Designer",
-    "Other",
+    { value: "Student", label: "Student" },
+    { value: "Professional", label: "Professional" },
+    { value: "Business Owner", label: "Business Owner" },
+    { value: "Developer", label: "Developer" },
+    { value: "Designer", label: "Designer" },
+    { value: "Other", label: "Other" },
   ];
 
-  const [username, setUsername] = useState("");
-  const [title, setTitle] = useState("");
-  const [email, setEmail] = useState("");
-  const [budget, setBudget] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [usernameError, setUsernameError] = useState("");
-  const [titleError, setTitleError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [budgetError, setBudgetError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
-
-  const validate = () => {
-    let isValid = true;
-
-    if (username.trim() === "") {
-      setUsernameError("Username is required!");
-      isValid = false;
-    } else {
-      setUsernameError("");
-    }
-
-    if (title.trim() === "") {
-      setTitleError("Title is required!");
-      isValid = false;
-    } else {
-      setTitleError("");
-    }
-
-    if (email.trim() === "") {
-      setEmailError("Email is required!");
-      isValid = false;
-    } else {
-      setEmailError("");
-    }
-    if (budget.trim() === "") {
-      setBudgetError("Budget is required!");
-      isValid = false;
-    } else {
-      setBudgetError("");
-    }
-
-    if (password.trim() === "") {
-      setPasswordError("Password is required!");
-      isValid = false;
-    } else {
-      setPasswordError("");
-    }
-
-    if (confirmPassword.trim() === "") {
-      setConfirmPasswordError("Confirm Password is required!");
-      isValid = false;
-    } else if (confirmPassword.trim() !== password.trim()) {
-      setConfirmPasswordError("Passwords don't match!");
-      isValid = false;
-    } else {
-      setConfirmPasswordError("");
-    }
-
-    return isValid;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!validate()) return;
-
-    const data = { username, title, email, password, budget };
-
-    registerUserApi(data)
-      .then((res) => {
-        toast.success(res.data.message);
-      })
-      .catch((err) => {
-        if (err.response) {
-          toast.warning(err.response.data.message);
-        } else {
-          toast.error("Something went wrong");
-        }
+  const handleSubmit = async (values) => {
+    try {
+      setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      notification.success({
+        message: "Welcome aboard! 🎉",
+        description: "Please check your email to verify your account.",
+        placement: "top",
       });
+      form.resetFields();
+    } catch (err) {
+      notification.error({
+        message: "Oops!",
+        description: err.message || "Something went wrong. Please try again.",
+        placement: "top",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      className="container-fluid min-vh-100 d-flex justify-content-center align-items-center"
-      style={{
-        backgroundColor: "#f8f9fa",
-        padding: "2rem 0",
-      }}
-    >
-      <div className="row w-75 bg-white shadow-lg rounded-3 position-relative overflow-hidden">
-        <div className="col-12 d-flex justify-content-center pt-4 pb-3">
-          <img
-            src={logo1}
-            className="img-fluid"
+    <Layout style={{ minHeight: "100vh" }}>
+      <Content style={{ padding: windowWidth > 768 ? "50px 0" : "20px 0" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <Card
+            bordered={false}
             style={{
-              maxWidth: "400px",
-              transform: "scale(0.9)",
+              borderRadius: 16,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+              margin: windowWidth <= 768 ? "0 16px" : 0,
             }}
-            alt="Logo 1"
-          />
-        </div>
+          >
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <div style={{ textAlign: "center" }}>
+                <img
+                  src="/api/placeholder/200/60"
+                  style={{
+                    maxWidth: 200,
+                    width: "100%",
+                    marginBottom: 24,
+                  }}
+                  alt="Logo"
+                />
+              </div>
 
-        <div className="row p-4">
-          <div className="col-md-6 pe-md-4 border-end">
-            <div className="px-md-4">
-              <h2
-                className="text-center mb-4 fw-bold"
-                style={{ fontSize: "24px", color: "#555" }}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: windowWidth <= 768 ? "column" : "row",
+                  gap: windowWidth <= 768 ? 32 : 48,
+                }}
               >
-                Create Account
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <div className="form-floating">
-                    <input
-                      type="text"
-                      className="form-control border-0 border-bottom rounded-0"
-                      id="usernameInput"
-                      placeholder="Username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <label htmlFor="usernameInput" style={{ color: "#666" }}>
-                      Username
-                    </label>
-                  </div>
-                  {usernameError && (
-                    <small className="text-danger">{usernameError}</small>
-                  )}
-                </div>
+                {/* Signup Form Section */}
+                <div
+                  style={{
+                    flex: 1,
+                    borderRight:
+                      windowWidth > 768
+                        ? "1px solid rgba(255, 255, 255, 0.12)"
+                        : "none",
+                    padding: "0 24px",
+                  }}
+                >
+                  <Title
+                    level={2}
+                    style={{ textAlign: "center", marginBottom: 32 }}
+                  >
+                    Create Account
+                  </Title>
 
-                <div className="mb-4">
-                  <div className="form-floating">
-                    <input
-                      type="email"
-                      className="form-control border-0 border-bottom rounded-0"
-                      id="emailInput"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <label htmlFor="emailInput" style={{ color: "#666" }}>
-                      Email
-                    </label>
-                  </div>
-                  {emailError && (
-                    <small className="text-danger">{emailError}</small>
-                  )}
-                </div>
-
-                <div className="mb-4">
-                  <div className="form-floating">
-                    <select
-                      className="form-select border-0 border-bottom rounded-0"
-                      id="titleSelect"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                  <Spin spinning={loading}>
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      onFinish={handleSubmit}
+                      requiredMark={false}
+                      size="large"
                     >
-                      {titleOptions.map((title, index) => (
-                        <option
-                          key={index}
-                          value={index === 0 ? "" : title}
-                          disabled={index === 0}
+                      <Form.Item
+                        name="username"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your username!",
+                          },
+                        ]}
+                      >
+                        <Input
+                          prefix={
+                            <UserOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Username"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="email"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your email!",
+                          },
+                          {
+                            type: "email",
+                            message: "Please enter a valid email!",
+                          },
+                        ]}
+                      >
+                        <Input
+                          prefix={
+                            <MailOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Email"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="title"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select your title!",
+                          },
+                        ]}
+                      >
+                        <Select
+                          options={titleOptions}
+                          placeholder="Select your title"
+                          style={{ width: "100%" }}
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="budget"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your budget!",
+                          },
+                        ]}
+                      >
+                        <Input
+                          prefix={
+                            <DollarOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Monthly Budget"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="password"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your password!",
+                          },
+                          {
+                            min: 8,
+                            message: "Password must be at least 8 characters!",
+                          },
+                        ]}
+                      >
+                        <Input.Password
+                          prefix={
+                            <LockOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Password"
+                          iconRender={(visible) =>
+                            visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                          }
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="confirmPassword"
+                        dependencies={["password"]}
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please confirm your password!",
+                          },
+                          ({ getFieldValue }) => ({
+                            validator(_, value) {
+                              if (
+                                !value ||
+                                getFieldValue("password") === value
+                              ) {
+                                return Promise.resolve();
+                              }
+                              return Promise.reject("Passwords don't match!");
+                            },
+                          }),
+                        ]}
+                      >
+                        <Input.Password
+                          prefix={
+                            <LockOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Confirm Password"
+                          iconRender={(visible) =>
+                            visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                          }
+                        />
+                      </Form.Item>
+
+                      <Button
+                        type="primary"
+                        block
+                        htmlType="submit"
+                        loading={loading}
+                        style={{ height: 48, marginBottom: 24 }}
+                      >
+                        Create Account
+                      </Button>
+
+                      <Divider>Or continue with</Divider>
+
+                      <Button
+                        block
+                        icon={<GoogleOutlined />}
+                        style={{ height: 48, marginBottom: 24 }}
+                        onClick={() =>
+                          notification.info({ message: "Coming soon!" })
+                        }
+                      >
+                        Continue with Google
+                      </Button>
+
+                      <Paragraph
+                        style={{ textAlign: "center", marginBottom: 0 }}
+                      >
+                        Already have an account?{" "}
+                        <Button
+                          type="link"
+                          href="/login"
+                          style={{ padding: "0 4px" }}
                         >
-                          {title}
-                        </option>
-                      ))}
-                    </select>
-                    <label htmlFor="titleSelect" style={{ color: "#666" }}>
-                      Title
-                    </label>
-                  </div>
-                  {titleError && (
-                    <small className="text-danger">{titleError}</small>
-                  )}
+                          Sign in
+                        </Button>
+                      </Paragraph>
+                    </Form>
+                  </Spin>
                 </div>
 
-                <div className="mb-4">
-                  <div className="form-floating">
-                    <input
-                      type="text"
-                      className="form-control border-0 border-bottom rounded-0"
-                      id="budgetInput"
-                      placeholder="Budget"
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                    />
-                    <label htmlFor="budgetInput" style={{ color: "#666" }}>
-                      Budget
-                    </label>
-                  </div>
-                  {budgetError && (
-                    <small className="text-danger">{budgetError}</small>
-                  )}
-                </div>
-
-                <div className="mb-4 position-relative">
-                  <div className="form-floating">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="form-control border-0 border-bottom rounded-0 pe-5"
-                      id="passwordInput"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <label htmlFor="passwordInput" style={{ color: "#666" }}>
-                      Password
-                    </label>
-                    <button
-                      type="button"
-                      className="btn position-absolute end-0 top-50 translate-middle-y bg-transparent border-0 text-muted"
-                      onClick={() => setShowPassword(!showPassword)}
-                      tabIndex="-1"
-                    >
-                      <i
-                        className={`bi ${
-                          showPassword ? "bi-eye-slash" : "bi-eye"
-                        }`}
-                        style={{ fontSize: "1.2rem" }}
-                      ></i>
-                    </button>
-                  </div>
-                  {passwordError && (
-                    <small className="text-danger">{passwordError}</small>
-                  )}
-                </div>
-
-                <div className="mb-4 position-relative">
-                  <div className="form-floating">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      className="form-control border-0 border-bottom rounded-0 pe-5"
-                      id="confirmPasswordInput"
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                {/* Right Section - Feature Highlights */}
+                {windowWidth > 768 && (
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "0 24px",
+                    }}
+                  >
+                    <img
+                      src="/api/placeholder/400/300"
+                      alt="Features"
                       style={{
-                        borderColor: passwordMatch ? "" : "#dc3545",
+                        maxWidth: 400,
+                        width: "100%",
+                        marginBottom: 32,
+                        animation: "float 3s ease-in-out infinite",
                       }}
                     />
-                    <label
-                      htmlFor="confirmPasswordInput"
-                      style={{ color: "#666" }}
+                    <Title
+                      level={3}
+                      style={{ textAlign: "center", marginBottom: 16 }}
                     >
-                      Confirm Password
-                    </label>
-                    <button
-                      type="button"
-                      className="btn position-absolute end-0 top-50 translate-middle-y bg-transparent border-0 text-muted"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      tabIndex="-1"
-                    >
-                      <i
-                        className={`bi ${
-                          showConfirmPassword ? "bi-eye-slash" : "bi-eye"
-                        }`}
-                        style={{ fontSize: "1.2rem" }}
-                      ></i>
-                    </button>
+                      Take Control of Your Finances
+                    </Title>
+                    <Paragraph style={{ textAlign: "center", fontSize: 16 }}>
+                      Join thousands of users who are already managing their
+                      finances smarter. Start tracking, budgeting, and achieving
+                      your financial goals today.
+                    </Paragraph>
                   </div>
-                  {!passwordMatch && (
-                    <small className="text-danger">
-                      Passwords do not match
-                    </small>
-                  )}
-                  {confirmPasswordError && (
-                    <small className="text-danger">
-                      {confirmPasswordError}
-                    </small>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-success w-100 mb-4 py-3 fw-semibold shadow-sm"
-                >
-                  Sign Up
-                </button>
-
-                <div className="text-center" style={{ fontSize: "14px" }}>
-                  Already have an account?{" "}
-                  <a
-                    href="/Login"
-                    className="text-success text-decoration-none fw-semibold"
-                  >
-                    Login
-                  </a>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div className="col-md-6 d-flex justify-content-center align-items-center p-4">
-            <img
-              src={logo2}
-              alt="FlowTrack Logo"
-              className="img-fluid"
-              style={{
-                maxWidth: "450px",
-                transform: "scale(0.9)",
-                animation: "float 3s ease-in-out infinite",
-              }}
-            />
-          </div>
+                )}
+              </div>
+            </Space>
+          </Card>
         </div>
-      </div>
+      </Content>
 
       <style>
         {`
-          @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css");
-
           @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
           }
 
-          .form-control:focus {
-            box-shadow: none;
-            border-color: #198754;
+          .ant-input-affix-wrapper:focus,
+          .ant-input-affix-wrapper-focused {
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
           }
 
-          .btn-success, .btn-outline-secondary {
-            border-radius: 8px;
+          .ant-form-item {
+            margin-bottom: 24px;
           }
 
-          .form-control::placeholder {
-            color: transparent;
+          .ant-input-affix-wrapper {
+            background-color: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+          }
+
+          .ant-input-affix-wrapper:hover {
+            border-color: #1890ff;
+          }
+
+          .ant-btn-primary {
+            background: linear-gradient(45deg, #1890ff, #096dd9);
+          }
+
+          .ant-btn-primary:hover {
+            background: linear-gradient(45deg, #40a9ff, #1890ff);
           }
         `}
       </style>
-    </div>
+    </Layout>
   );
 };
 

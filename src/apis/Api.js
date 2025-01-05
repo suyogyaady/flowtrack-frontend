@@ -35,3 +35,58 @@ export const getSingleprofileApi = () =>
 // update profile api
 export const updateProfileApi = (data) =>
   Api.put("/api/user/update_profile", data, jsonConfig);
+
+// update profile picture
+export const uploadProfilePictureApi = (data) =>
+  Api.put("/api/user/upload_profile_picture", data, config);
+
+// Delete account api
+export const deleteAccountApi = () => Api.delete("/api/user/delete_account");
+
+// change password api
+export const changePasswordApi = (data) =>
+  Api.put("/api/user/change_password", data, jsonConfig);
+
+// login with google
+export const loginWithGoogle = (data) =>
+  Api.post("/api/user/google_login", data, config);
+
+//get user by google email
+export const getUserByGoogleEmail = (data) =>
+  Api.post("/api/user/get_user_by_google_email", data, config);
+
+// create expense
+export const createExpenseApi = (data) =>
+  Api.post("/api/expense/create_expense", data, config);
+
+// create transaction
+export const createTransactionApi = (data) =>
+  Api.post("/api/transaction/create_transaction", data, jsonConfig);
+
+// create income
+export const createIncomeApi = (data) =>
+  Api.post("/api/income/create_income", data, config);
+
+// Get All Expenses
+export const getAllExpensesApi = () =>
+  Api.get("/api/transaction/get_total_expense", jsonConfig);
+
+// Get All Incomes
+export const getAllIncomesApi = () =>
+  Api.get("/api/transaction/get_all_income", jsonConfig);
+
+// Get Total Expenses
+export const getTotalExpensesApi = () =>
+  Api.get("/api/transaction/get_total_expense", jsonConfig);
+
+// Get Total Incomes
+export const getTotalIncomesApi = () =>
+  Api.get("/api/transaction/get_total_income", jsonConfig);
+
+// Get All Transactions
+export const getAllTransactionsApi = () =>
+  Api.get("/api/transaction/get_all_transactions", jsonConfig);
+
+// Get Transactions By User
+export const getTransactionsByUserApi = () =>
+  Api.get("/api/transaction/get_all_transactions_by_user", jsonConfig);

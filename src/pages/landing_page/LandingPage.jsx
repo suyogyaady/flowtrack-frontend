@@ -5,18 +5,13 @@ const LandingPage = () => {
   const handleClick = () => {
     console.log("Journey begun!");
     window.location.href = "/login";
-    // Add navigation or API calls here
   };
 
   return (
-    <div
-      className="min-vh-100 d-flex align-items-center justify-content-center position-relative overflow-hidden"
-      style={{ background: "#ffffff" }}
-    >
+    <div className="min-h-screen  items-center justify-center relative overflow-hidden bg-white">
       {/* Background Curves */}
       <svg
-        className="position-absolute"
-        style={{ width: "100%", height: "100%", top: 0, left: 0, zIndex: 0 }}
+        className="absolute w-full h-full top-0 left-0 z-0"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
       >
@@ -39,48 +34,24 @@ const LandingPage = () => {
       </svg>
 
       {/* Main Content */}
-      <div className="container position-relative" style={{ zIndex: 1 }}>
-        <div className="row justify-content-center">
-          <div className="col-md-6 text-center">
-            {/* Logo Icon */}
-            <div className="mb-3"></div>
+      <div className="container relative z-10">
+        <div className="flex flex-col items-center">
+          {/* Logo Icon */}
+          <div className="mb-6">
             <img
               src={Logo}
               alt="FlowTrack Logo"
-              className="img-fluid"
-              style={{
-                maxWidth: "600px",
-                maxHeight: "600px",
-                transform: "scale(0.9)",
-                animation: "float 3s ease-in-out infinite",
-              }}
+              className="max-w-[600px] max-h-[600px] scale-90 animate-float"
             />
-            {/* CTA Button */}
-            <button
-              onClick={handleClick}
-              className="btn px-4 py-2 rounded-pill"
-              style={{
-                backgroundColor: "#40c057",
-                color: "white",
-                fontSize: "1.1rem",
-                padding: "12px 30px",
-                border: "none",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(64, 192, 87, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              Begin Your Journey
-              <span className="ms-2">→</span>
-            </button>
           </div>
+          {/* CTA Button */}
+          <button
+            onClick={handleClick}
+            className="bg-green-500 text-white text-lg py-3 px-8 rounded-full shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl"
+          >
+            Begin Your Journey
+            <span className="ml-2">→</span>
+          </button>
         </div>
       </div>
     </div>
@@ -88,3 +59,17 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+/* Tailwind Custom Animation in CSS */
+/* Include in a global CSS file if needed */
+/* @keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+} */

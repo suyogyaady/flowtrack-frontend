@@ -1,97 +1,391 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { getSingleprofileApi, updateProfileApi } from "../../apis/Api";
+import {
+  Form,
+  Input,
+  Select,
+  Button,
+  Upload,
+  Modal,
+  Spin,
+  message,
+  Card,
+  Divider,
+  Space,
+  Typography,
+  theme,
+} from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  CameraOutlined,
+  LockOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  CloudUploadOutlined,
+  SafetyCertificateOutlined,
+} from "@ant-design/icons";
+import {
+  getSingleprofileApi,
+  updateProfileApi,
+  uploadProfilePictureApi,
+} from "../../apis/Api";
+import ChangePassword from "./Component/ChangePassword";
+import DeleteAccount from "./Component/DeleteAccount";
+
+const { Title, Text } = Typography;
 
 const Profile = () => {
+  const [form] = Form.useForm();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [title, setTitle] = useState("");
   const [user, setUser] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccountModal] = useState(false);
+  const { token } = theme.useToken();
+
+  const titleOptions = [
+    { value: "", label: "Select your title", disabled: true },
+    { value: "Student", label: "Student" },
+    { value: "Teacher", label: "Teacher" },
+    { value: "Businessman", label: "Businessman" },
+    { value: "Banker", label: "Banker" },
+    { value: "Trader", label: "Trader" },
+    { value: "Developer", label: "Developer" },
+    { value: "Engineer", label: "Engineer" },
+    { value: "Doctor", label: "Doctor" },
+    { value: "Consultant", label: "Consultant" },
+    { value: "Entrepreneur", label: "Entrepreneur" },
+    { value: "Accountant", label: "Accountant" },
+    { value: "Manager", label: "Manager" },
+    { value: "Designer", label: "Designer" },
+    { value: "Other", label: "Other" },
+  ];
+
+  // Styles
+  const containerStyle = {
+    minHeight: "100vh",
+    background: token.colorBgContainer,
+    padding: "24px",
+  };
+
+  const cardStyle = {
+    background: token.colorBgElevated,
+    borderRadius: token.borderRadiusLG,
+    border: `1px solid ${token.colorBorder}`,
+  };
+
+  const headerStyle = {
+    background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive})`,
+    padding: "32px 24px",
+    borderRadius: `${token.borderRadiusLG}px ${token.borderRadiusLG}px 0 0`,
+    marginBottom: "24px",
+  };
+
+  const fetchProfileData = async () => {
+    try {
+      const res = await getSingleprofileApi();
+      const { username, email, title, profilePicture } = res.data.user;
+      setUsername(username);
+      setEmail(email);
+      setTitle(title);
+      setPreviewImage(profilePicture);
+      form.setFieldsValue({ username, email, title });
+    } catch (error) {
+      message.error("Failed to fetch user profile");
+    }
+  };
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
-
-    getSingleprofileApi()
-      .then((res) => {
-        console.log("API response:", res.data);
-        const { username, email, title } = res.data.user;
-        setUsername(username);
-        setEmail(email);
-        setTitle(title);
-      })
-      .catch((error) => {
-        console.log(error);
-        toast.error("Failed to fetch user profile.");
-      });
+    fetchProfileData();
   }, []);
 
-  const handleUpdate = (e) => {
-    e.preventDefault();
-    const formData = { username, email, title };
+  const handleImageUpload = async (info) => {
+    if (info.file.status === "uploading") {
+      setIsLoading(true);
+      return;
+    }
 
-    updateProfileApi(formData)
-      .then((res) => {
+    if (info.file.status === "done") {
+      const formData = new FormData();
+      formData.append("newImage", info.file.originFileObj);
+
+      try {
+        const res = await uploadProfilePictureApi(formData);
         if (res.status === 200) {
-          toast.success(res.data.message);
+          message.success({
+            content: "Profile picture updated successfully",
+            icon: <CloudUploadOutlined style={{ color: token.colorSuccess }} />,
+          });
+          await fetchProfileData();
         }
-      })
-      .catch((error) => {
-        if (error.response) {
-          toast.error(error.response.data.message);
-        } else {
-          toast.error("An error occurred while updating the profile.");
-        }
+      } catch (error) {
+        message.error({
+          content: "Failed to upload profile picture",
+          icon: <CloudUploadOutlined style={{ color: token.colorError }} />,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleUpdate = async (values) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      Object.keys(values).forEach((key) => {
+        formData.append(key, values[key]);
       });
+
+      const res = await updateProfileApi(formData);
+      if (res.status === 200) {
+        message.success({
+          content: "Profile updated successfully",
+          icon: <EditOutlined style={{ color: token.colorSuccess }} />,
+        });
+        await fetchProfileData();
+      }
+    } catch (error) {
+      message.error({
+        content: "Failed to update profile",
+        icon: <EditOutlined style={{ color: token.colorError }} />,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!user) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div
+        style={{
+          ...containerStyle,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return (
-    <div className="profile-container">
-      <div className="profile-card">
-        <h2 className="profile-title">Edit Profile</h2>
-        <form onSubmit={handleUpdate}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              type="text"
-              className="form-control"
-              placeholder="Enter username"
-            />
+    <div style={containerStyle}>
+      <Card style={cardStyle} bordered={false}>
+        <div style={headerStyle}>
+          <Title
+            level={2}
+            style={{
+              color: token.colorTextLightSolid,
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            Profile Settings
+          </Title>
+        </div>
+
+        <div style={{ padding: "0 24px 24px" }}>
+          {/* Profile Picture Section */}
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <Upload
+              name="avatar"
+              listType="picture-circle"
+              className="avatar-uploader"
+              showUploadList={false}
+              onChange={handleImageUpload}
+            >
+              <div
+                style={{
+                  width: 128,
+                  height: 128,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                {previewImage ? (
+                  <>
+                    <img
+                      src={`http://localhost:5000${previewImage}`}
+                      alt="avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        background: "rgba(0,0,0,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                        transition: "opacity 0.3s",
+                        ":hover": { opacity: 1 },
+                      }}
+                    >
+                      <CameraOutlined style={{ fontSize: 24, color: "#fff" }} />
+                    </div>
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: token.colorFillSecondary,
+                    }}
+                  >
+                    <CameraOutlined
+                      style={{ fontSize: 24, color: token.colorTextSecondary }}
+                    />
+                    <Text
+                      style={{ marginTop: 8, color: token.colorTextSecondary }}
+                    >
+                      Upload
+                    </Text>
+                  </div>
+                )}
+              </div>
+            </Upload>
           </div>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              className="form-control"
-              placeholder="Enter email"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="title">Title</label>
-            <input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              type="text"
-              className="form-control"
-              placeholder="Enter title"
-            />
-          </div>
-          <button type="submit" className="btn btn-primary profile-button">
-            Save Profile
-          </button>
-        </form>
-      </div>
+
+          <Form form={form} layout="vertical" onFinish={handleUpdate}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: "24px",
+              }}
+            >
+              <Form.Item
+                name="username"
+                label={<Text strong>Username</Text>}
+                rules={[{ required: true, message: "Username is required" }]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  size="large"
+                  placeholder="Enter username"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="email"
+                label={<Text strong>Email</Text>}
+                rules={[
+                  { required: true, message: "Email is required" },
+                  { type: "email", message: "Please enter a valid email" },
+                ]}
+              >
+                <Input
+                  prefix={<MailOutlined />}
+                  size="large"
+                  placeholder="Enter email"
+                />
+              </Form.Item>
+            </div>
+
+            <Form.Item
+              name="title"
+              label={<Text strong>Title</Text>}
+              rules={[{ required: true, message: "Please select a title" }]}
+            >
+              <Select
+                options={titleOptions}
+                size="large"
+                placeholder="Select your title"
+              />
+            </Form.Item>
+
+            <Divider />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoading}
+                icon={<EditOutlined />}
+                size="large"
+                block
+              >
+                Save Changes
+              </Button>
+
+              <Button
+                icon={<SafetyCertificateOutlined />}
+                onClick={() => setShowPasswordModal(true)}
+                size="large"
+                block
+              >
+                Change Password
+              </Button>
+
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => setShowDeleteAccountModal(true)}
+                size="large"
+                block
+              >
+                Delete Account
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </Card>
+
+      {/* Modals */}
+      <Modal
+        title={
+          <Space>
+            <LockOutlined /> <span>Change Password</span>
+          </Space>
+        }
+        open={showPasswordModal}
+        onCancel={() => setShowPasswordModal(false)}
+        footer={null}
+        width={480}
+      >
+        <ChangePassword />
+      </Modal>
+
+      <Modal
+        title={
+          <Space>
+            <DeleteOutlined />{" "}
+            <span style={{ color: token.colorError }}>Delete Account</span>
+          </Space>
+        }
+        open={showDeleteAccount}
+        onCancel={() => setShowDeleteAccountModal(false)}
+        footer={null}
+        width={480}
+      >
+        <DeleteAccount />
+      </Modal>
     </div>
   );
 };

@@ -1,377 +1,284 @@
 import React, { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { PieChart, Pie, Cell } from "recharts";
-import { Plus, Minus } from "lucide-react";
-import { getSingleprofileApi } from "../../apis/Api";
+import {
+  Layout,
+  Card,
+  Row,
+  Col,
+  Typography,
+  Table,
+  Tag,
+  Statistic,
+} from "antd";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+} from "recharts";
+import {
+  getAllTransactionsApi,
+  getSingleprofileApi,
+  getTotalExpensesApi,
+  getTotalIncomesApi,
+} from "../../apis/Api";
+import TransactionModals from "../../components/transactionModels";
+
+const { Content } = Layout;
 
 const Dashboard = () => {
-  const sidebarWidth = "240px";
-
-  //use state for user's budget
   const [budget, setBudget] = useState(0);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+  const [change, setChange] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
 
-  // 2. Call API initially (page load) - set all fetch details to state(1)
+  const aggregateMonthlyData = (transactions) => {
+    const monthlyData = Array(12)
+      .fill(0)
+      .map((_, i) => ({
+        month: new Date(2025, i).toLocaleString("default", { month: "short" }),
+        amount: 0,
+      }));
+
+    transactions.forEach((transaction) => {
+      const date = new Date(transaction.transactionDate);
+      const monthIndex = date.getMonth();
+      const amount =
+        transaction.amount *
+        (transaction.transactionType === "Income" ? 1 : -1);
+      monthlyData[monthIndex].amount += amount;
+    });
+
+    return monthlyData;
+  };
+
+  const aggregateExpenseData = (transactions) => {
+    const expenseData = {};
+
+    transactions
+      .filter((t) => t.transactionType === "Expense")
+      .forEach((transaction) => {
+        const category = transaction.ExpenseID.expenseName;
+        if (!expenseData[category]) {
+          expenseData[category] = {
+            name: category,
+            value: 0,
+            color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+          };
+        }
+        expenseData[category].value += transaction.amount;
+      });
+
+    return Object.values(expenseData);
+  };
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
 
     getSingleprofileApi()
       .then((res) => {
-        console.log("API response:", res.data);
         const { budget } = res.data.user;
+        setUser(res.data.user);
         setBudget(budget);
-        setIsLoading(false); // Set loading to false
+        setIsLoading(false);
       })
       .catch((error) => {
-        console.log(error);
-        setIsLoading(false); // Ensure loading state is updated
+        console.error(error);
+        setIsLoading(false);
       });
-  }, []);
 
-  const monthlyData = [
-    { month: "Jan", amount: 18000 },
-    { month: "Feb", amount: 55000 },
-    { month: "Mar", amount: 22000 },
-    { month: "Apr", amount: 4000 },
-    { month: "May", amount: 18000 },
-    { month: "Jun", amount: 58000 },
-    { month: "Jul", amount: 62000 },
-    { month: "Aug", amount: 42000 },
-    { month: "Sep", amount: 35000 },
-    { month: "Oct", amount: 32000 },
-    { month: "Nov", amount: 18000 },
-    { month: "Dec", amount: 8000 },
-  ];
+    getTotalIncomesApi()
+      .then((res) => {
+        setTotalIncome(res.data.totalIncomes);
+      })
+      .catch((err) => console.log(err));
 
-  const expenseData = [
-    { name: "Transportation", value: 120, color: "#22c55e" },
-    { name: "Grocery", value: 150, color: "#3b82f6" },
-    { name: "Gift", value: 999, color: "#ef4444" },
-  ];
+    getTotalExpensesApi()
+      .then((res) => {
+        console.log(res.data);
+        setTotalExpense(res.data.totalExpenses);
+      })
+      .catch((err) => console.log(err));
 
-  const transactions = [
+    getAllTransactionsApi()
+      .then((res) => {
+        setTransactions(res.data);
+        setMonthlyData(aggregateMonthlyData(res.data));
+        setExpenseData(aggregateExpenseData(res.data));
+      })
+      .catch((err) => console.log(err));
+  }, [change]);
+
+  const handleAdd = () => {
+    console.log("add");
+    setChange(!change);
+  };
+
+  const columns = [
     {
-      name: "KFC",
-      category: "Food",
-      amount: "Rs.5500",
-      date: "17th Feb, 2024",
-      type: "expense",
+      title: "Name",
+      dataIndex: ["ExpenseID", "expenseName"],
+      key: "name",
+      render: (text, record) =>
+        record.transactionType === "Expense"
+          ? record.ExpenseID?.expenseName
+          : record.IncomeID?.incomeName,
     },
     {
-      name: "April Salary",
-      category: "Salary",
-      amount: "Rs.50000",
-      date: "21st May, 2024",
-      type: "income",
+      title: "Category",
+      dataIndex: "transactionType",
+      key: "category",
+      render: (text) => (
+        <Tag color={text === "Expense" ? "red" : "green"}>{text}</Tag>
+      ),
     },
     {
-      name: "Pushpa 2",
-      category: "Entertainment",
-      amount: "Rs.2100",
-      date: "6th Jun, 2024",
-      type: "expense",
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount, record) => (
+        <span
+          style={{
+            color: record.transactionType === "Income" ? "#52c41a" : "#f5222d",
+            fontWeight: "bold",
+          }}
+        >
+          Rs.{amount.toLocaleString()}
+        </span>
+      ),
     },
     {
-      name: "Polo",
-      category: "Clothes",
-      amount: "Rs.6500",
-      date: "19th Aug, 2024",
-      type: "expense",
-    },
-    {
-      name: "Vision Dividend",
-      category: "Income",
-      amount: "Rs.175000",
-      date: "7th Dec, 2024",
-      type: "income",
+      title: "Date",
+      dataIndex: "transactionDate",
+      key: "date",
+      render: (date) => new Date(date).toLocaleDateString(),
     },
   ];
 
   return (
-    <>
-      <div
-        style={{
-          marginLeft: sidebarWidth,
-          padding: "24px",
-          transition: "margin-left 0.3s ease",
-        }}
-      >
-        {/* Summary Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "20px",
-            marginBottom: "24px",
-          }}
-        >
-          {/* Total Balance Card */}
-          {/* Total Balance Card */}
-          <div
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "16px",
-              borderRadius: "8px",
-            }}
-          >
-            <div style={{ color: "#888" }}>Total Balance</div>
-            <div style={{ fontSize: "24px", fontWeight: "bold" }}>
-              {isLoading ? "Loading..." : `Rs.${budget}`}
-            </div>
-          </div>
+    <Layout>
+      <Content style={{ margin: "24px", minHeight: "100vh" }}>
+        {/* Summary Statistics */}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Statistic
+                title="Total Balance"
+                value={isLoading ? "Loading..." : `Rs.${budget}`}
+                loading={isLoading}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Statistic
+                title="Total Expense"
+                value={totalExpense}
+                prefix="Rs."
+                valueStyle={{ color: "#cf1322" }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Statistic
+                title="Total Income"
+                value={totalIncome}
+                prefix="Rs."
+                valueStyle={{ color: "#3f8600" }}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-          {/* Total Expense Card */}
-          <div
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "16px",
-              borderRadius: "8px",
-            }}
-          >
-            <div style={{ color: "#888" }}>Total Expense</div>
-            <div style={{ fontSize: "24px", fontWeight: "bold" }}>Rs.7,540</div>
-          </div>
+        {/* Charts Section */}
+        <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+          <Col xs={24} lg={12}>
+            <Card title="Overview">
+              <div style={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData}>
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="amount" fill="#1890ff" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </Col>
 
-          {/* Total Income Card */}
-          <div
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "16px",
-              borderRadius: "8px",
-            }}
-          >
-            <div style={{ color: "#888" }}>Total Income</div>
-            <div style={{ fontSize: "24px", fontWeight: "bold" }}>Rs.7,540</div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "24px",
-          }}
-        >
-          {/* Overview Chart */}
-          <div
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "16px",
-              borderRadius: "8px",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "20px",
-                fontWeight: "bold",
-                marginBottom: "16px",
-              }}
-            >
-              Overview
-            </h2>
-            <div style={{ height: "300px" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
-                  <XAxis dataKey="month" stroke="#888888" />
-                  <YAxis stroke="#888888" />
-                  <Bar dataKey="amount" fill="#0ea5e9" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Expense Distribution */}
-          <div
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "16px",
-              borderRadius: "8px",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "20px",
-                fontWeight: "bold",
-                marginBottom: "16px",
-              }}
-            >
-              Lifestyle
-            </h2>
-            <div style={{ height: "300px" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={expenseData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {expenseData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={{ marginTop: "16px" }}>
-              {expenseData.map((item) => (
-                <div
-                  key={item.name}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+          <Col xs={24} lg={12}>
+            <Card title="Lifestyle">
+              <div style={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={expenseData}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {expenseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <Row gutter={[16, 8]} style={{ marginTop: "16px" }}>
+                {expenseData.map((item) => (
+                  <Col span={8} key={item.name}>
                     <div
                       style={{
-                        width: "12px",
-                        height: "12px",
-                        borderRadius: "50%",
-                        backgroundColor: item.color,
-                      }}
-                    />
-                    <span>{item.name}</span>
-                  </div>
-                  <span>${item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Transactions */}
-          <div
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              padding: "16px",
-              borderRadius: "8px",
-              gridColumn: "span 2",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "20px",
-                fontWeight: "bold",
-                marginBottom: "16px",
-              }}
-            >
-              Transactions
-            </h2>
-            <div>
-              {transactions.map((transaction) => (
-                <div
-                  key={transaction.name}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "12px",
-                    marginBottom: "8px",
-                    borderRadius: "6px",
-                    transition: "background-color 0.2s",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#333")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "transparent")
-                  }
-                >
-                  <div>
-                    <div style={{ fontWeight: 500 }}>{transaction.name}</div>
-                    <div style={{ color: "#888", fontSize: "14px" }}>
-                      {transaction.category}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div
-                      style={{
-                        color:
-                          transaction.type === "income" ? "#22c55e" : "#ef4444",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
                       }}
                     >
-                      {transaction.amount}
+                      <div
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          backgroundColor: item.color,
+                        }}
+                      />
+                      <span>
+                        {item.name}: Rs.{item.value.toLocaleString()}
+                      </span>
                     </div>
-                    <div style={{ color: "#888", fontSize: "14px" }}>
-                      {transaction.date}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+                  </Col>
+                ))}
+              </Row>
+            </Card>
+          </Col>
+        </Row>
 
-      {/* Floating Action Buttons */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: "32px",
-          right: "32px",
-          display: "flex",
-          flexDirection: "row",
-          gap: "16px",
-          zIndex: 1000,
-        }}
-      >
-        <button
-          style={{
-            width: "56px",
-            height: "56px",
-            backgroundColor: "#22c55e",
-            color: "white",
-            borderRadius: "50%",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 12px rgba(34, 197, 94, 0.4)",
-            transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          title="Add Income"
-        >
-          <Plus size={24} />
-        </button>
-        <button
-          style={{
-            width: "56px",
-            height: "56px",
-            backgroundColor: "#ef4444",
-            color: "white",
-            borderRadius: "50%",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 12px rgba(239, 68, 68, 0.4)",
-            transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          title="Add Expense"
-        >
-          <Minus size={24} />
-        </button>
-      </div>
-    </>
+        {/* Transactions Table */}
+        <Card title="Transactions" style={{ marginTop: "16px" }}>
+          <Table
+            columns={columns}
+            dataSource={transactions}
+            rowKey="_id"
+            pagination={false}
+          />
+        </Card>
+      </Content>
+      <TransactionModals onAdd={handleAdd} />
+    </Layout>
   );
 };
 

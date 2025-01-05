@@ -1,246 +1,331 @@
-import React, { useState } from "react";
-import logo1 from "../../assets/images/Logo1.png";
-import logo2 from "../../assets/images/Logo2.png";
-import google from "../../assets/images/google.png";
-import { loginUserApi } from "../../apis/Api";
-import { toast } from "react-toastify";
+import React, { useState, useEffect } from "react";
+import {
+  Form,
+  Input,
+  Button,
+  Divider,
+  message,
+  Card,
+  Layout,
+  Typography,
+  Spin,
+  Space,
+} from "antd";
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  GoogleOutlined,
+  LockOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
+import { GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
+import {
+  getUserByGoogleEmail,
+  loginUserApi,
+  loginWithGoogle,
+} from "../../apis/Api";
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [forgotPassword, setForgotPassword] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  const handleEmail = (e) => setEmail(e.target.value);
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      if (!credentialResponse.credential) {
+        throw new Error("Google authentication failed");
+      }
 
-  const handlePassword = (e) => setPassword(e.target.value);
+      const response = await loginWithGoogle({
+        token: credentialResponse.credential,
+      });
 
-  const validate = () => {
-    let isValid = true;
-
-    if (email.trim() === "") {
-      setEmailError("Email is required!");
-
-      isValid = false;
-    } else {
-      setEmailError("");
+      if (response.data.success) {
+        message.success("Successfully logged in with Google!");
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.userData));
+        navigate(
+          response.data.userData.isAdmin ? "/admin/dashboard" : "/dashboard"
+        );
+      } else {
+        throw new Error(response.data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      message.error(
+        error.message || "Failed to login with Google. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    if (password.trim() === "") {
-      setPasswordError("Password is required!");
-
-      isValid = false;
-    } else {
-      setPasswordError("");
-    }
-
-    return isValid;
   };
 
-  const handleSubmit = (e) => {
-    console.log("Login button clicked!");
-    e.preventDefault();
+  const handleSubmit = async (values) => {
+    try {
+      setLoading(true);
+      const res = await loginUserApi(values);
 
-    if (!validate()) return;
+      if (!res.data.success) {
+        throw new Error(res.data.message);
+      }
 
-    loginUserApi({ email, password })
-      .then((res) => {
-        if (res.data.success === false) {
-          toast.error(res.data.message);
-        } else {
-          toast.success(res.data.message);
-
-          localStorage.setItem("token", res.data.token);
-
-          localStorage.setItem("user", JSON.stringify(res.data.userData));
-
-          window.location.href = res.data.userData.isAdmin
-            ? "/admin/dashboard"
-            : "/dashboard";
-        }
-      })
-
-      .catch(() => toast.error("Login failed"));
-  };
-
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
+      message.success(res.data.message);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.userData));
+      navigate(res.data.userData.isAdmin ? "/admin/dashboard" : "/dashboard");
+    } catch (error) {
+      message.error(error.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      className="container-fluid min-vh-100 d-flex justify-content-center align-items-center"
-      style={{
-        backgroundColor: "#f8f9fa",
-        padding: "2rem 0",
-      }}
-    >
-      <div className="row w-75 bg-white shadow-lg rounded-3 position-relative overflow-hidden">
-        {/* Top Logo */}
-        <div className="col-12 d-flex justify-content-center pt-4 pb-3">
-          <img
-            src={logo1}
-            className="img-fluid"
+    <Layout style={{ minHeight: "100vh" }}>
+      <Content style={{ padding: windowWidth > 768 ? "50px 0" : "20px 0" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <Card
+            bordered={false}
             style={{
-              maxWidth: "400px",
-              transform: "scale(0.9)",
+              borderRadius: 16,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+              margin: windowWidth <= 768 ? "0 16px" : 0,
             }}
-            alt="Logo 1"
-          />
-        </div>
-
-        <div className="row p-4">
-          {/* Left Section */}
-          <div className="col-md-6 pe-md-4 border-end">
-            <div className="px-md-4">
-              <h2
-                className="text-center mb-4 fw-bold"
-                style={{ fontSize: "24px", color: "#555" }}
-              >
-                Welcome Back
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <div className="form-floating">
-                    <input
-                      type="email"
-                      className="form-control border-0 border-bottom rounded-0"
-                      id="emailInput"
-                      placeholder="Email"
-                      onChange={handleEmail}
-                    />
-                    <label htmlFor="emailInput" style={{ color: "#666" }}>
-                      Email
-                    </label>
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <div className="form-floating position-relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="form-control border-0 border-bottom rounded-0 pe-5"
-                      id="passwordInput"
-                      placeholder="Password"
-                      onChange={handlePassword}
-                    />
-                    <label htmlFor="passwordInput" style={{ color: "#666" }}>
-                      Password
-                    </label>
-                    <button
-                      type="button"
-                      className="btn position-absolute end-0 top-50 translate-middle-y bg-transparent border-0 text-secondary"
-                      onClick={togglePassword}
-                      style={{ padding: "0 10px", zIndex: 5 }}
-                    >
-                      {showPassword ? (
-                        <i className="bi bi-eye-slash fs-5"></i>
-                      ) : (
-                        <i className="bi bi-eye fs-5"></i>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <div className="text-end mb-4">
-                  <a
-                    href="#"
-                    className="text-primary text-decoration-none"
-                    style={{ fontSize: "14px" }}
-                  >
-                    Forgot Password?
-                  </a>
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  className="btn btn-success w-100 mb-4 py-3 fw-semibold shadow-sm"
-                >
-                  Login
-                </button>
-              </form>
-
-              <div className="position-relative mb-4">
-                <hr className="text-muted" />
-                <span
-                  className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted"
-                  style={{ fontSize: "14px" }}
-                >
-                  Or continue with
-                </span>
-              </div>
-
-              <button
-                className="btn btn-outline-secondary w-100 py-3 d-flex align-items-center justify-content-center mb-4 shadow-sm"
-                style={{ transition: "all 0.3s ease" }}
-                onMouseOver={(e) =>
-                  (e.target.style.backgroundColor = "#f8f9fa")
-                }
-                onMouseOut={(e) =>
-                  (e.target.style.backgroundColor = "transparent")
-                }
-              >
+          >
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <div style={{ textAlign: "center" }}>
                 <img
-                  src={google}
-                  alt="Google"
-                  style={{ width: "20px", height: "20px", marginRight: "10px" }}
+                  src="/logo.png"
+                  style={{
+                    maxWidth: 200,
+                    width: "100%",
+                    marginBottom: 24,
+                  }}
+                  alt="Logo"
                 />
-                Login with Google
-              </button>
-
-              <div className="text-center" style={{ fontSize: "14px" }}>
-                Don't have an account?{" "}
-                <a
-                  href="/signup"
-                  className="text-success text-decoration-none fw-semibold"
-                >
-                  Sign up now
-                </a>
               </div>
-            </div>
-          </div>
 
-          {/* Right Section */}
-          <div className="col-md-6 d-flex justify-content-center align-items-center p-4">
-            <img
-              src={logo2}
-              alt="FlowTrack Logo"
-              className="img-fluid"
-              style={{
-                maxWidth: "450px",
-                transform: "scale(0.9)",
-                animation: "float 3s ease-in-out infinite",
-              }}
-            />
-          </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: windowWidth <= 768 ? "column" : "row",
+                  gap: windowWidth <= 768 ? 32 : 48,
+                }}
+              >
+                {/* Login Form Section */}
+                <div
+                  style={{
+                    flex: 1,
+                    borderRight:
+                      windowWidth > 768
+                        ? "1px solid rgba(255, 255, 255, 0.12)"
+                        : "none",
+                    padding: "0 24px",
+                  }}
+                >
+                  <Title
+                    level={2}
+                    style={{ textAlign: "center", marginBottom: 32 }}
+                  >
+                    Welcome Back
+                  </Title>
+
+                  <Spin spinning={loading}>
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      onFinish={handleSubmit}
+                      requiredMark={false}
+                      size="large"
+                    >
+                      <Form.Item
+                        name="email"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your email!",
+                          },
+                          {
+                            type: "email",
+                            message: "Please enter a valid email!",
+                          },
+                        ]}
+                      >
+                        <Input
+                          prefix={
+                            <MailOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Email"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="password"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your password!",
+                          },
+                          {
+                            min: 6,
+                            message: "Password must be at least 6 characters!",
+                          },
+                        ]}
+                      >
+                        <Input.Password
+                          prefix={
+                            <LockOutlined
+                              style={{ color: "rgba(255, 255, 255, 0.45)" }}
+                            />
+                          }
+                          placeholder="Password"
+                          iconRender={(visible) =>
+                            visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                          }
+                        />
+                      </Form.Item>
+
+                      <div style={{ textAlign: "right", marginBottom: 24 }}>
+                        <Button type="link" style={{ padding: 0 }}>
+                          Forgot Password?
+                        </Button>
+                      </div>
+
+                      <Button
+                        type="primary"
+                        block
+                        htmlType="submit"
+                        loading={loading}
+                        style={{ height: 48, marginBottom: 24 }}
+                      >
+                        Login
+                      </Button>
+
+                      <Divider>Or continue with</Divider>
+
+                      <div style={{ marginBottom: 24 }}>
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccess}
+                          onError={() => {
+                            message.error(
+                              "Google login failed. Please try again."
+                            );
+                          }}
+                          useOneTap
+                          shape="rectangular"
+                          theme="filled_black"
+                          size="large"
+                          width="100%"
+                        />
+                      </div>
+
+                      <Paragraph
+                        style={{ textAlign: "center", marginBottom: 0 }}
+                      >
+                        Don't have an account?{" "}
+                        <Button
+                          type="link"
+                          onClick={() => navigate("/signup")}
+                          style={{ padding: "0 4px" }}
+                        >
+                          Sign up now
+                        </Button>
+                      </Paragraph>
+                    </Form>
+                  </Spin>
+                </div>
+
+                {/* Right Section - Feature Highlights */}
+                {windowWidth > 768 && (
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "0 24px",
+                    }}
+                  >
+                    <img
+                      src="/feature-image.png"
+                      alt="Features"
+                      style={{
+                        maxWidth: 400,
+                        width: "100%",
+                        marginBottom: 32,
+                        animation: "float 3s ease-in-out infinite",
+                      }}
+                    />
+                    <Title
+                      level={3}
+                      style={{ textAlign: "center", marginBottom: 16 }}
+                    >
+                      Track Your Finances with Ease
+                    </Title>
+                    <Paragraph style={{ textAlign: "center", fontSize: 16 }}>
+                      Get detailed insights into your spending patterns, set
+                      budgets, and achieve your financial goals with our
+                      powerful tracking tools.
+                    </Paragraph>
+                  </div>
+                )}
+              </div>
+            </Space>
+          </Card>
         </div>
-      </div>
+      </Content>
 
       <style>
         {`
-          @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css");
-
           @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
           }
 
-          .form-control:focus {
-            box-shadow: none;
-            border-color: #198754;
+          .ant-input-affix-wrapper:focus,
+          .ant-input-affix-wrapper-focused {
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
           }
 
-          .btn-success, .btn-outline-secondary {
-            border-radius: 8px;
+          .ant-form-item {
+            margin-bottom: 24px;
           }
 
-          .form-control::placeholder {
-            color: transparent;
+          .ant-input-affix-wrapper {
+            background-color: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+          }
+
+          .ant-input-affix-wrapper:hover {
+            border-color: #1890ff;
+          }
+
+          .ant-btn-primary {
+            background: linear-gradient(45deg, #1890ff, #096dd9);
+          }
+
+          .ant-btn-primary:hover {
+            background: linear-gradient(45deg, #40a9ff, #1890ff);
           }
         `}
       </style>
-    </div>
+    </Layout>
   );
 };
 
