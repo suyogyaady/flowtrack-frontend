@@ -25,6 +25,7 @@ import {
   getSingleprofileApi,
   getTotalExpensesApi,
   getTotalIncomesApi,
+  getTransactionsByUserApi,
 } from "../../apis/Api";
 import TransactionModals from "../../components/transactionModels";
 
@@ -110,7 +111,7 @@ const Dashboard = () => {
       })
       .catch((err) => console.log(err));
 
-    getAllTransactionsApi()
+    getTransactionsByUserApi()
       .then((res) => {
         setTransactions(res.data);
         setMonthlyData(aggregateMonthlyData(res.data));
@@ -166,8 +167,11 @@ const Dashboard = () => {
   ];
 
   return (
-    <Layout>
-      <Content style={{ margin: "24px", minHeight: "100vh" }}>
+    <Layout className="bg-black">
+      <Content
+        style={{ margin: "24px", minHeight: "100vh" }}
+        className="bg-black"
+      >
         {/* Summary Statistics */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>

@@ -15,14 +15,20 @@ const MainLayout = ({ children }) => {
     <Layout
       style={{
         overflow: "hidden",
+        background: "#181818",
       }}
     >
       <Sidebar />
       <Layout
-        style={{ minHeight: "100vh", transition: "all 0.2s", marginLeft: 300 }}
+        style={{
+          minHeight: "100vh",
+          transition: "all 0.2s",
+          marginLeft: 300,
+          background: "#181818",
+        }}
       >
         <Content
-          style={{ margin: "24px 16px", padding: 24, background: "#fff" }}
+          style={{ margin: "24px 16px", padding: 24, background: "#181818" }}
         >
           {children}
         </Content>

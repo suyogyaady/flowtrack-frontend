@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Button,
-  Divider,
   Card,
   Layout,
   Typography,
@@ -19,16 +18,18 @@ import {
   LockOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
-  GoogleOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { registerUserApi } from "../../apis/Api";
 
 const { Content } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
 
 const Signup = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -48,13 +49,18 @@ const Signup = () => {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      notification.success({
-        message: "Welcome aboard! 🎉",
-        description: "Please check your email to verify your account.",
-        placement: "top",
-      });
-      form.resetFields();
+      const response = await registerUserApi(values);
+      if (response.data.success) {
+        notification.success({
+          message: "Welcome aboard! 🎉",
+          description: "Account created successfully. Please log in.",
+          placement: "top",
+        });
+        form.resetFields();
+        navigate("/login"); // Redirect to login page
+      } else {
+        throw new Error(response.data.message || "Registration failed.");
+      }
     } catch (err) {
       notification.error({
         message: "Oops!",
@@ -79,18 +85,6 @@ const Signup = () => {
             }}
           >
             <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              <div style={{ textAlign: "center" }}>
-                <img
-                  src="/api/placeholder/200/60"
-                  style={{
-                    maxWidth: 200,
-                    width: "100%",
-                    marginBottom: 24,
-                  }}
-                  alt="Logo"
-                />
-              </div>
-
               <div
                 style={{
                   display: "flex",
@@ -197,7 +191,7 @@ const Signup = () => {
                               style={{ color: "rgba(255, 255, 255, 0.45)" }}
                             />
                           }
-                          placeholder="Monthly Budget"
+                          placeholder="Initial Budget"
                         />
                       </Form.Item>
 
@@ -243,7 +237,9 @@ const Signup = () => {
                               ) {
                                 return Promise.resolve();
                               }
-                              return Promise.reject("Passwords don't match!");
+                              return Promise.reject(
+                                new Error("Passwords don't match!")
+                              );
                             },
                           }),
                         ]}
@@ -269,19 +265,6 @@ const Signup = () => {
                         style={{ height: 48, marginBottom: 24 }}
                       >
                         Create Account
-                      </Button>
-
-                      <Divider>Or continue with</Divider>
-
-                      <Button
-                        block
-                        icon={<GoogleOutlined />}
-                        style={{ height: 48, marginBottom: 24 }}
-                        onClick={() =>
-                          notification.info({ message: "Coming soon!" })
-                        }
-                      >
-                        Continue with Google
                       </Button>
 
                       <Paragraph
@@ -313,7 +296,7 @@ const Signup = () => {
                     }}
                   >
                     <img
-                      src="/api/placeholder/400/300"
+                      src="/assets/images/Logo2.png"
                       alt="Features"
                       style={{
                         maxWidth: 400,
@@ -340,42 +323,6 @@ const Signup = () => {
           </Card>
         </div>
       </Content>
-
-      <style>
-        {`
-          @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-          }
-
-          .ant-input-affix-wrapper:focus,
-          .ant-input-affix-wrapper-focused {
-            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-          }
-
-          .ant-form-item {
-            margin-bottom: 24px;
-          }
-
-          .ant-input-affix-wrapper {
-            background-color: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.15);
-          }
-
-          .ant-input-affix-wrapper:hover {
-            border-color: #1890ff;
-          }
-
-          .ant-btn-primary {
-            background: linear-gradient(45deg, #1890ff, #096dd9);
-          }
-
-          .ant-btn-primary:hover {
-            background: linear-gradient(45deg, #40a9ff, #1890ff);
-          }
-        `}
-      </style>
     </Layout>
   );
 };

@@ -8,6 +8,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   Select,
@@ -17,32 +19,47 @@ import {
   Typography,
   Button,
   Modal,
+  Row,
+  Col,
+  Statistic,
+  Space,
+  Divider,
 } from "antd";
-import { FilterOutlined } from "@ant-design/icons";
+import {
+  FilterOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  WalletOutlined,
+} from "@ant-design/icons";
 
 const { RangePicker } = DatePicker;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const Report = () => {
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [filterType, setFilterType] = useState("monthly");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [chartType, setChartType] = useState("line");
 
   // Sample data - replace with your actual data
   const data = [
-    { month: "Jan", income: 38, expense: 60 },
-    { month: "Feb", income: 90, expense: 55 },
-    { month: "Mar", income: 32, expense: 85 },
-    { month: "Apr", income: 28, expense: 82 },
-    { month: "May", income: 15, expense: 35 },
-    { month: "Jun", income: 12, expense: 90 },
-    { month: "Jul", income: 78, expense: 95 },
-    { month: "Aug", income: 18, expense: 68 },
-    { month: "Sep", income: 65, expense: 15 },
-    { month: "Oct", income: 72, expense: 55 },
-    { month: "Nov", income: 60, expense: 36 },
-    { month: "Dec", income: 45, expense: 82 },
+    { month: "Jan", income: 38000, expense: 60000 },
+    { month: "Feb", income: 90000, expense: 55000 },
+    { month: "Mar", income: 32000, expense: 85000 },
+    { month: "Apr", income: 28000, expense: 82000 },
+    { month: "May", income: 15000, expense: 35000 },
+    { month: "Jun", income: 12000, expense: 90000 },
+    { month: "Jul", income: 78000, expense: 95000 },
+    { month: "Aug", income: 18000, expense: 68000 },
+    { month: "Sep", income: 65000, expense: 15000 },
+    { month: "Oct", income: 72000, expense: 55000 },
+    { month: "Nov", income: 60000, expense: 36000 },
+    { month: "Dec", income: 45000, expense: 82000 },
   ];
+
+  const totalIncome = data.reduce((sum, item) => sum + item.income, 0);
+  const totalExpense = data.reduce((sum, item) => sum + item.expense, 0);
+  const netSavings = totalIncome - totalExpense;
 
   const showFilterModal = () => {
     setIsFilterModalVisible(true);
@@ -56,147 +73,247 @@ const Report = () => {
     setIsFilterModalVisible(false);
   };
 
-  return (
-    <div className="p-4 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with Filter Button */}
-        <div className="flex justify-between items-center mb-6">
-          <Title level={2} className="m-0 text-green-500">
-            Reports
-          </Title>
-          <Button
-            type="primary"
-            icon={<FilterOutlined />}
-            onClick={showFilterModal}
-            className="bg-black hover:bg-gray-800"
-          >
-            Filter
-          </Button>
-        </div>
-
-        {/* Main Chart Card - Now Bigger */}
-        <Card className="shadow-lg rounded-lg mb-6">
-          <div className="h-[calc(100vh-280px)] min-h-[500px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={data}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 20,
-                  bottom: 20,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 14 }}
-                  padding={{ left: 20, right: 20 }}
-                />
-                <YAxis tick={{ fontSize: 14 }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "none",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  }}
-                />
-                <Legend
-                  height={36}
-                  iconSize={10}
-                  wrapperStyle={{ fontSize: "14px" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="income"
-                  stroke="#818cf8"
-                  strokeWidth={3}
-                  dot={{ r: 6, strokeWidth: 2 }}
-                  activeDot={{ r: 8 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="expense"
-                  stroke="#f87171"
-                  strokeWidth={3}
-                  dot={{ r: 6, strokeWidth: 2 }}
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="shadow-md">
-            <div className="text-center">
-              <p className="text-gray-600 mb-2">Total Income</p>
-              <p className="text-2xl font-semibold text-green-500">$12,450</p>
-            </div>
-          </Card>
-          <Card className="shadow-md">
-            <div className="text-center">
-              <p className="text-gray-600 mb-2">Total Expenses</p>
-              <p className="text-2xl font-semibold text-red-500">$8,250</p>
-            </div>
-          </Card>
-          <Card className="shadow-md">
-            <div className="text-center">
-              <p className="text-gray-600 mb-2">Net Savings</p>
-              <p className="text-2xl font-semibold text-blue-500">$4,200</p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Filter Modal */}
-        <Modal
-          title="Filter Options"
-          open={isFilterModalVisible}
-          onOk={handleOk}
-          onCancel={handleCancel}
-          footer={[
-            <Button key="back" onClick={handleCancel}>
-              Cancel
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              onClick={handleOk}
-              className="bg-black hover:bg-gray-800"
-            >
-              Apply Filters
-            </Button>,
-          ]}
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <Card
+          size="small"
+          style={{ background: "#1f1f1f", border: "1px solid #303030" }}
         >
-          <div className="space-y-6 py-4">
+          <p style={{ margin: 0, color: "#fff" }}>{label}</p>
+          {payload.map((p, index) => (
+            <p key={index} style={{ color: p.color, margin: "4px 0" }}>
+              {p.name}: ₹{p.value.toLocaleString()}
+            </p>
+          ))}
+        </Card>
+      );
+    }
+    return null;
+  };
+
+  const renderChart = () => {
+    if (chartType === "line") {
+      return (
+        <LineChart
+          data={data}
+          margin={{
+            top: 20,
+            right: 30,
+            left: 20,
+            bottom: 20,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#303030" />
+          <XAxis
+            dataKey="month"
+            tick={{ fill: "#fff" }}
+            padding={{ left: 20, right: 20 }}
+          />
+          <YAxis
+            tick={{ fill: "#fff" }}
+            tickFormatter={(value) => `₹${value / 1000}K`}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend height={36} iconSize={10} wrapperStyle={{ color: "#fff" }} />
+          <Line
+            type="monotone"
+            dataKey="income"
+            stroke="#52C41A"
+            strokeWidth={3}
+            dot={{ r: 6, strokeWidth: 2 }}
+            activeDot={{ r: 8 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="expense"
+            stroke="#ff4d4f"
+            strokeWidth={3}
+            dot={{ r: 6, strokeWidth: 2 }}
+            activeDot={{ r: 8 }}
+          />
+        </LineChart>
+      );
+    }
+    return (
+      <AreaChart
+        data={data}
+        margin={{
+          top: 20,
+          right: 30,
+          left: 20,
+          bottom: 20,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#303030" />
+        <XAxis
+          dataKey="month"
+          tick={{ fill: "#fff" }}
+          padding={{ left: 20, right: 20 }}
+        />
+        <YAxis
+          tick={{ fill: "#fff" }}
+          tickFormatter={(value) => `₹${value / 1000}K`}
+        />
+        <Tooltip content={<CustomTooltip />} />
+        <Legend height={36} iconSize={10} wrapperStyle={{ color: "#fff" }} />
+        <Area
+          type="monotone"
+          dataKey="income"
+          stroke="#52C41A"
+          fill="#52C41A"
+          fillOpacity={0.2}
+          strokeWidth={3}
+        />
+        <Area
+          type="monotone"
+          dataKey="expense"
+          stroke="#ff4d4f"
+          fill="#ff4d4f"
+          fillOpacity={0.2}
+          strokeWidth={3}
+        />
+      </AreaChart>
+    );
+  };
+
+  return (
+    <div style={{ padding: 24 }}>
+      {/* Header Section */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Title level={2} style={{ margin: 0, color: "#fff" }}>
+            Financial Reports
+          </Title>
+        </Col>
+        <Col>
+          <Space>
+            <Radio.Group
+              value={chartType}
+              onChange={(e) => setChartType(e.target.value)}
+              buttonStyle="solid"
+            >
+              <Radio.Button value="line">Line Chart</Radio.Button>
+              <Radio.Button value="area">Area Chart</Radio.Button>
+            </Radio.Group>
+            <Button
+              type="primary"
+              icon={<FilterOutlined />}
+              onClick={showFilterModal}
+            >
+              Filter
+            </Button>
+          </Space>
+        </Col>
+      </Row>
+
+      {/* Summary Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} md={8}>
+          <Card bordered={false}>
+            <Statistic
+              title={<Text style={{ color: "#fff" }}>Total Income</Text>}
+              value={totalIncome}
+              precision={2}
+              valueStyle={{ color: "#52C41A" }}
+              prefix="₹"
+              suffix={<ArrowUpOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card bordered={false}>
+            <Statistic
+              title={<Text style={{ color: "#fff" }}>Total Expenses</Text>}
+              value={totalExpense}
+              precision={2}
+              valueStyle={{ color: "#ff4d4f" }}
+              prefix="₹"
+              suffix={<ArrowDownOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card bordered={false}>
+            <Statistic
+              title={<Text style={{ color: "#fff" }}>Net Savings</Text>}
+              value={netSavings}
+              precision={2}
+              valueStyle={{ color: "#1890ff" }}
+              prefix="₹"
+              suffix={<WalletOutlined />}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Main Chart Card */}
+      <Card bordered={false} style={{ marginBottom: 24 }}>
+        <div style={{ height: "calc(100vh - 380px)", minHeight: "500px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            {renderChart()}
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Filter Modal */}
+      <Modal
+        title={<Text style={{ color: "#fff" }}>Filter Options</Text>}
+        open={isFilterModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleOk}>
+            Apply Filters
+          </Button>,
+        ]}
+      >
+        <div style={{ padding: "16px 0" }}>
+          <Space direction="vertical" style={{ width: "100%" }} size="large">
             <div>
-              <p className="text-gray-600 mb-2">Time Period</p>
+              <Text style={{ color: "#fff" }}>Time Period</Text>
               <Radio.Group
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full"
+                style={{ width: "100%", marginTop: 8 }}
               >
-                <div className="grid grid-cols-3 gap-2">
-                  <Radio.Button value="weekly" className="text-center">
-                    Weekly
-                  </Radio.Button>
-                  <Radio.Button value="monthly" className="text-center">
-                    Monthly
-                  </Radio.Button>
-                  <Radio.Button value="yearly" className="text-center">
-                    Yearly
-                  </Radio.Button>
-                </div>
+                <Row gutter={8}>
+                  <Col span={8}>
+                    <Radio.Button
+                      value="weekly"
+                      style={{ width: "100%", textAlign: "center" }}
+                    >
+                      Weekly
+                    </Radio.Button>
+                  </Col>
+                  <Col span={8}>
+                    <Radio.Button
+                      value="monthly"
+                      style={{ width: "100%", textAlign: "center" }}
+                    >
+                      Monthly
+                    </Radio.Button>
+                  </Col>
+                  <Col span={8}>
+                    <Radio.Button
+                      value="yearly"
+                      style={{ width: "100%", textAlign: "center" }}
+                    >
+                      Yearly
+                    </Radio.Button>
+                  </Col>
+                </Row>
               </Radio.Group>
             </div>
 
             <div>
-              <p className="text-gray-600 mb-2">Category</p>
+              <Text style={{ color: "#fff" }}>Category</Text>
               <Select
-                defaultValue="all"
-                style={{ width: "100%" }}
+                value={selectedCategory}
+                style={{ width: "100%", marginTop: 8 }}
                 onChange={setSelectedCategory}
                 options={[
                   { value: "all", label: "All Categories" },
@@ -208,12 +325,12 @@ const Report = () => {
             </div>
 
             <div>
-              <p className="text-gray-600 mb-2">Date Range</p>
-              <RangePicker className="w-full" />
+              <Text style={{ color: "#fff" }}>Date Range</Text>
+              <RangePicker style={{ width: "100%", marginTop: 8 }} />
             </div>
-          </div>
-        </Modal>
-      </div>
+          </Space>
+        </div>
+      </Modal>
     </div>
   );
 };

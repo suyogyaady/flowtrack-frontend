@@ -16,7 +16,8 @@ import Report from "./pages/reports_page/Report";
 
 const customTheme = {
   token: {
-    colorPrimary: "#1890ff",
+    background: "black",
+    colorPrimary: "#000000",
     borderRadius: 8,
     colorBgContainer: "#141414",
     colorBgElevated: "#1f1f1f",
@@ -35,7 +36,7 @@ const customTheme = {
   },
   components: {
     Button: {
-      primaryColor: "#1890ff",
+      primaryColor: "#28A648",
       borderRadius: 8,
       controlHeight: 40,
     },
@@ -75,7 +76,7 @@ function App() {
             pauseOnFocusLoss
             draggable
             pauseOnHover
-            theme="dark"
+            theme="light"
           />
           <Routes>
             <Route path="/" element={<LandingPage />} />

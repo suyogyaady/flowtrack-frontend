@@ -8,8 +8,25 @@ import {
   Modal,
   Form,
   DatePicker,
+  Card,
+  Space,
+  Row,
+  Col,
+  Typography,
+  Tooltip,
+  Statistic,
 } from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  SearchOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 const Transaction = () => {
   const [transactions, setTransactions] = useState([
@@ -57,38 +74,66 @@ const Transaction = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [filters, setFilters] = useState({ type: "", category: "" });
+  const [filters, setFilters] = useState({
+    type: "",
+    category: "",
+    search: "",
+  });
+  const [editingRecord, setEditingRecord] = useState(null);
+
+  const totalIncome = transactions
+    .filter((t) => t.category === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalExpense = transactions
+    .filter((t) => t.category === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const balance = totalIncome - totalExpense;
 
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      render: (text, record) => <Text strong>{text}</Text>,
     },
     {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
       render: (amount, record) => (
-        <span
-          className={`font-medium ${
-            record.category === "income" ? "text-green-500" : "text-red-500"
-          }`}
+        <Text
+          strong
+          style={{
+            color: record.category === "income" ? "#52C41A" : "#ff4d4f",
+            fontSize: "16px",
+          }}
         >
           {record.category === "income" ? "₹" : "-₹"}
-          {amount}
-        </span>
+          {amount.toLocaleString()}
+        </Text>
       ),
     },
     {
       title: "Type",
       dataIndex: "type",
       key: "type",
+      render: (type) => <Tag color="blue">{type}</Tag>,
     },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
+      render: (date) => (
+        <Text>
+          {new Date(date).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </Text>
+      ),
     },
     {
       title: "Category",
@@ -104,103 +149,217 @@ const Transaction = () => {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <div className="space-x-2">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            className="text-blue-500 hover:text-blue-600"
-          />
-          <Button
-            type="text"
-            icon={<DeleteOutlined />}
-            className="text-red-500 hover:text-red-600"
-            onClick={() => handleDelete(record.id)}
-          />
-        </div>
+        <Space>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              style={{ color: "#1890ff" }}
+              onClick={() => handleEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              icon={<DeleteOutlined />}
+              style={{ color: "#ff4d4f" }}
+              onClick={() => handleDelete(record.id)}
+            />
+          </Tooltip>
+        </Space>
       ),
     },
   ];
 
   const handleDelete = (id) => {
-    setTransactions(transactions.filter((t) => t.id !== id));
+    Modal.confirm({
+      title: "Are you sure you want to delete this transaction?",
+      content: "This action cannot be undone.",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: () => {
+        setTransactions(transactions.filter((t) => t.id !== id));
+      },
+    });
   };
 
-  const handleAdd = (values) => {
-    const newTransaction = {
-      id: transactions.length + 1,
+  const handleEdit = (record) => {
+    setEditingRecord(record);
+    form.setFieldsValue({
+      ...record,
+      date: record.date ? new Date(record.date) : null,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleSubmit = (values) => {
+    const formattedValues = {
       ...values,
       date: values.date.format("YYYY-MM-DD"),
+      amount: Number(values.amount),
     };
-    setTransactions([...transactions, newTransaction]);
+
+    if (editingRecord) {
+      setTransactions(
+        transactions.map((t) =>
+          t.id === editingRecord.id
+            ? { ...formattedValues, id: editingRecord.id }
+            : t
+        )
+      );
+    } else {
+      const newTransaction = {
+        id: Math.max(...transactions.map((t) => t.id)) + 1,
+        ...formattedValues,
+      };
+      setTransactions([...transactions, newTransaction]);
+    }
+
     setIsModalVisible(false);
+    setEditingRecord(null);
     form.resetFields();
   };
 
   const filteredTransactions = transactions.filter((t) => {
-    return (
-      (!filters.type ||
-        t.type.toLowerCase().includes(filters.type.toLowerCase())) &&
-      (!filters.category || t.category === filters.category)
-    );
+    const searchMatch =
+      t.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      t.type.toLowerCase().includes(filters.search.toLowerCase());
+    const categoryMatch = !filters.category || t.category === filters.category;
+    const typeMatch =
+      !filters.type ||
+      t.type.toLowerCase().includes(filters.type.toLowerCase());
+
+    return searchMatch && categoryMatch && typeMatch;
   });
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Transactions</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className="bg-green-500 hover:bg-green-600"
-          onClick={() => setIsModalVisible(true)}
-        >
-          Add Transaction
-        </Button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type Filter
-            </label>
-            <Input
-              placeholder="Filter by type"
-              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+    <div style={{ padding: "24px" }}>
+      {/* Stats Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={8}>
+          <Card bordered={false}>
+            <Statistic
+              title="Total Income"
+              value={totalIncome}
+              precision={2}
+              prefix="₹"
+              valueStyle={{ color: "#52C41A" }}
+              suffix={<ArrowUpOutlined />}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card bordered={false}>
+            <Statistic
+              title="Total Expense"
+              value={totalExpense}
+              precision={2}
+              prefix="₹"
+              valueStyle={{ color: "#ff4d4f" }}
+              suffix={<ArrowDownOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card bordered={false}>
+            <Statistic
+              title="Balance"
+              value={balance}
+              precision={2}
+              prefix="₹"
+              valueStyle={{ color: balance >= 0 ? "#52C41A" : "#ff4d4f" }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Header Actions */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col xs={24} md={16}>
+          <Space wrap>
+            <Input
+              placeholder="Search transactions..."
+              prefix={<SearchOutlined />}
+              value={filters.search}
+              onChange={(e) =>
+                setFilters({ ...filters, search: e.target.value })
+              }
+              style={{ width: 250 }}
+            />
             <Select
-              className="w-full"
-              placeholder="Select category"
-              onChange={(value) => setFilters({ ...filters, category: value })}
+              placeholder="Category"
               allowClear
+              value={filters.category}
+              onChange={(value) => setFilters({ ...filters, category: value })}
+              style={{ width: 150 }}
             >
               <Select.Option value="income">Income</Select.Option>
               <Select.Option value="expense">Expense</Select.Option>
             </Select>
-          </div>
-        </div>
+            <Input
+              placeholder="Filter by type"
+              prefix={<FilterOutlined />}
+              value={filters.type}
+              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+              style={{ width: 200 }}
+            />
+          </Space>
+        </Col>
+        <Col
+          xs={24}
+          md={8}
+          style={{ textAlign: "right", marginTop: { xs: 16, md: 0 } }}
+        >
+          <Space wrap style={{ justifyContent: "flex-end" }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingRecord(null);
+                form.resetFields();
+                setIsModalVisible(true);
+              }}
+              style={{ backgroundColor: "#52C41A" }}
+            >
+              Add Transaction
+            </Button>
+          </Space>
+        </Col>
+      </Row>
 
+      {/* Transaction Table */}
+      <Card bordered={false}>
         <Table
           columns={columns}
           dataSource={filteredTransactions}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
-          className="border rounded-lg"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
+          }}
         />
-      </div>
+      </Card>
 
+      {/* Add/Edit Modal */}
       <Modal
-        title="Add New Transaction"
+        title={editingRecord ? "Edit Transaction" : "Add New Transaction"}
         open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setEditingRecord(null);
+          form.resetFields();
+        }}
         footer={null}
       >
-        <Form form={form} layout="vertical" onFinish={handleAdd}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={editingRecord}
+        >
           <Form.Item
             name="name"
             label="Name"
@@ -213,7 +372,7 @@ const Transaction = () => {
             label="Amount"
             rules={[{ required: true, message: "Please input the amount!" }]}
           >
-            <Input type="number" />
+            <Input type="number" prefix="₹" />
           </Form.Item>
           <Form.Item
             name="type"
@@ -237,19 +396,27 @@ const Transaction = () => {
             label="Date"
             rules={[{ required: true, message: "Please select the date!" }]}
           >
-            <DatePicker className="w-full" />
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item className="mb-0">
-            <div className="flex justify-end space-x-2">
-              <Button onClick={() => setIsModalVisible(false)}>Cancel</Button>
+          <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>
+            <Space>
+              <Button
+                onClick={() => {
+                  setIsModalVisible(false);
+                  setEditingRecord(null);
+                  form.resetFields();
+                }}
+              >
+                Cancel
+              </Button>
               <Button
                 type="primary"
                 htmlType="submit"
-                className="bg-green-500 hover:bg-green-600"
+                style={{ backgroundColor: "#52C41A" }}
               >
-                Add
+                {editingRecord ? "Update" : "Add"}
               </Button>
-            </div>
+            </Space>
           </Form.Item>
         </Form>
       </Modal>

@@ -56,9 +56,9 @@ const Login = () => {
         message.success("Successfully logged in with Google!");
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.userData));
-        navigate(
-          response.data.userData.isAdmin ? "/admin/dashboard" : "/dashboard"
-        );
+        window.location.href = response.data.userData.isAdmin
+          ? "/admin/dashboard"
+          : "/dashboard";
       } else {
         throw new Error(response.data.message || "Login failed");
       }
@@ -84,7 +84,10 @@ const Login = () => {
       message.success(res.data.message);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.userData));
-      navigate(res.data.userData.isAdmin ? "/admin/dashboard" : "/dashboard");
+      window.location.href = res.data.userData.isAdmin
+        ? "/admin/dashboard"
+        : "/dashboard";
+      // navigate(res.data.userData.isAdmin ? "/admin/dashboard" : "/dashboard");
     } catch (error) {
       message.error(error.message || "Login failed");
     } finally {
@@ -106,15 +109,15 @@ const Login = () => {
           >
             <Space direction="vertical" size="large" style={{ width: "100%" }}>
               <div style={{ textAlign: "center" }}>
-                <img
-                  src="/logo.png"
+                {/* <img
+                  src="/assets/images/Logo1.png"
                   style={{
                     maxWidth: 200,
                     width: "100%",
                     marginBottom: 24,
                   }}
                   alt="Logo"
-                />
+                /> */}
               </div>
 
               <div
@@ -139,7 +142,7 @@ const Login = () => {
                     level={2}
                     style={{ textAlign: "center", marginBottom: 32 }}
                   >
-                    Welcome Back
+                    LOGIN
                   </Title>
 
                   <Spin spinning={loading}>
@@ -262,7 +265,7 @@ const Login = () => {
                     }}
                   >
                     <img
-                      src="/feature-image.png"
+                      src="/assets/images/Logo2.png"
                       alt="Features"
                       style={{
                         maxWidth: 400,

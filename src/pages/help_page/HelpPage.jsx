@@ -132,12 +132,12 @@ const HelpPage = () => {
         {/* Header Section */}
         <div style={{ textAlign: "center", marginBottom: token.margin * 3 }}>
           <img
-            src="/api/placeholder/150/150"
+            src="/assets/images/LogoAllLight.png"
             alt="FlowTrack Logo"
             style={{
               margin: "0 auto",
               marginBottom: token.marginLG,
-              height: "128px",
+              height: "200px",
               width: "auto",
             }}
           />
@@ -153,20 +153,6 @@ const HelpPage = () => {
             Find answers to common questions or get in touch with our support
             team
           </Paragraph>
-
-          <Input
-            prefix={
-              <SearchOutlined style={{ color: token.colorTextQuaternary }} />
-            }
-            placeholder="Search FAQs..."
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              maxWidth: "600px",
-              margin: "0 auto",
-              marginTop: token.marginLG,
-            }}
-            size="large"
-          />
         </div>
 
         {/* Getting Started Section */}

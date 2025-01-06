@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -34,11 +34,14 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [selectedKey, setSelectedKey] = useState("/dashboard");
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [user, setUser] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Get the current location
+
+  // Automatically set the selected menu key based on the URL path
+  const [selectedKey, setSelectedKey] = useState(location.pathname);
 
   // Custom theme configuration
   const { token } = theme.useToken();
@@ -70,6 +73,11 @@ const Sidebar = () => {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    // Update selected key whenever the location changes
+    setSelectedKey(location.pathname);
+  }, [location]);
 
   const fetchProfileData = async () => {
     try {
