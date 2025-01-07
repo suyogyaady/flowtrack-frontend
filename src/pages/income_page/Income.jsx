@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Layout,
   Typography,
@@ -22,53 +22,23 @@ import {
   ArrowDownOutlined,
 } from "@ant-design/icons";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import { getAllIncomesApi } from "../../apis/Api";
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
 const Income = () => {
-  const [incomes] = useState([
-    {
-      id: 1,
-      name: "Salary",
-      amount: 85000,
-      date: "1st Jan, 2024",
-      category: "Employment",
-      trend: "up",
-    },
-    {
-      id: 2,
-      name: "Freelance Project",
-      amount: 25000,
-      date: "15th Mar, 2024",
-      category: "Freelance",
-      trend: "down",
-    },
-    {
-      id: 3,
-      name: "Stock Dividend",
-      amount: 7500,
-      date: "22nd Apr, 2024",
-      category: "Investment",
-      trend: "up",
-    },
-    {
-      id: 4,
-      name: "Rental Income",
-      amount: 35000,
-      date: "5th May, 2024",
-      category: "Real Estate",
-      trend: "up",
-    },
-    {
-      id: 5,
-      name: "Consulting Fee",
-      amount: 45000,
-      date: "30th Jun, 2024",
-      category: "Business",
-      trend: "down",
-    },
-  ]);
+  const [incomes, setIncomes] = useState([]);
+
+  useEffect(() => {
+    getAllIncomesApi()
+      .then((res) => {
+        setIncomes(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   const chartData = [
     { name: "Employment", value: 85000, color: "#52C41A" },
@@ -197,7 +167,7 @@ const Income = () => {
               dataSource={incomes}
               renderItem={(income) => (
                 <List.Item
-                  key={income.id}
+                  key={income._id}
                   style={{
                     padding: "16px",
                     borderRadius: "8px",
@@ -209,7 +179,9 @@ const Income = () => {
                     avatar={
                       <div
                         style={{
-                          background: `${getCategoryColor(income.category)}20`,
+                          background: `${getCategoryColor(
+                            income.IncomeID.incomeCategory
+                          )}20`,
                           padding: 12,
                           borderRadius: 12,
                         }}
@@ -217,7 +189,9 @@ const Income = () => {
                         <BankOutlined
                           style={{
                             fontSize: 24,
-                            color: getCategoryColor(income.category),
+                            color: getCategoryColor(
+                              income.IncomeID.incomeCategory
+                            ),
                           }}
                         />
                       </div>
@@ -225,17 +199,17 @@ const Income = () => {
                     title={
                       <Space align="center">
                         <Text strong style={{ fontSize: 16 }}>
-                          {income.name}
+                          {income.IncomeID.incomeName}
                         </Text>
-                        <Tag color={getCategoryColor(income.category)}>
-                          {income.category}
+                        <Tag color={getCategoryColor(income.IncomeID.category)}>
+                          {income.IncomeID.incomeCategory}
                         </Tag>
                       </Space>
                     }
                     description={
                       <Text type="secondary">
                         <CalendarOutlined style={{ marginRight: 8 }} />
-                        {income.date}
+                        {income.IncomeID.incomeDate}
                       </Text>
                     }
                   />

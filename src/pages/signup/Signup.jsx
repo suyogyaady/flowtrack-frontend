@@ -88,6 +88,23 @@ const Signup = () => {
               <div
                 style={{
                   display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src="/assets/images/LogoTextLight.png"
+                  style={{
+                    maxWidth: 200,
+                    width: "100%",
+                    marginBottom: 24,
+                  }}
+                  alt="Logo"
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
                   flexDirection: windowWidth <= 768 ? "column" : "row",
                   gap: windowWidth <= 768 ? 32 : 48,
                 }}

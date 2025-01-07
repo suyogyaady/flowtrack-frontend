@@ -36,6 +36,10 @@ export const getSingleprofileApi = () =>
 export const updateProfileApi = (data) =>
   Api.put("/api/user/update_profile", data, jsonConfig);
 
+// updateUserProfile
+export const updateUserProfile = (data) =>
+  Api.put("/api/user/update_google_profile", data, jsonConfig);
+
 // update profile picture
 export const uploadProfilePictureApi = (data) =>
   Api.put("/api/user/upload_profile_picture", data, config);

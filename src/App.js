@@ -1,11 +1,12 @@
 // App.jsx
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { ConfigProvider, theme, App as AntApp, notification } from "antd";
-import LandingPage from "./pages/landing_page/LandingPage";
+
 import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/dashboard/Dashboard";
+import LandingPage from "./pages/landing_page/LandingPage";
 import Profile from "./pages/profile/Profile";
 import HelpPage from "./pages/help_page/HelpPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -13,6 +14,8 @@ import Transaction from "./pages/transaction_page/Transaction";
 import Expense from "./pages/expense_page/Expense";
 import Income from "./pages/income_page/Income";
 import Report from "./pages/reports_page/Report";
+import "./App.css";
+import "antd/dist/reset.css";
 
 const customTheme = {
   token: {
@@ -36,7 +39,7 @@ const customTheme = {
   },
   components: {
     Button: {
-      primaryColor: "#28A648",
+      primaryColor: "#ffffff",
       borderRadius: 8,
       controlHeight: 40,
     },
@@ -66,18 +69,6 @@ function App() {
     >
       <AntApp>
         <BrowserRouter>
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />

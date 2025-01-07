@@ -30,7 +30,7 @@ import { getSingleprofileApi } from "../../apis/Api";
 const { Sider } = Layout;
 const { Text } = Typography;
 
-const Sidebar = () => {
+const Sidebar = ({ onCollapse, onMobileChange }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -38,13 +38,36 @@ const Sidebar = () => {
   const [user, setUser] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current location
-
-  // Automatically set the selected menu key based on the URL path
+  const location = useLocation();
   const [selectedKey, setSelectedKey] = useState(location.pathname);
 
-  // Custom theme configuration
   const { token } = theme.useToken();
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      setMobileView(isMobile);
+      onMobileChange?.(isMobile);
+      if (window.innerWidth >= 768) {
+        setMobileDrawerOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    fetchProfileData();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [onMobileChange]);
+
+  useEffect(() => {
+    setSelectedKey(location.pathname);
+  }, [location]);
+
+  const handleCollapse = (isCollapsed) => {
+    setCollapsed(isCollapsed);
+    onCollapse?.(isCollapsed);
+  };
   const themeConfig = {
     token: {
       colorPrimary: "#4CAF50",
@@ -319,7 +342,7 @@ const Sidebar = () => {
         <Sider
           collapsible
           collapsed={collapsed}
-          onCollapse={setCollapsed}
+          onCollapse={handleCollapse}
           width={280}
           style={{
             ...sidebarStyle,

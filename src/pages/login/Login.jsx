@@ -10,6 +10,9 @@ import {
   Typography,
   Spin,
   Space,
+  Modal,
+  Select,
+  InputNumber,
 } from "antd";
 import {
   EyeInvisibleOutlined,
@@ -29,9 +32,21 @@ import {
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
+const titleOptions = [
+  { value: "Student", label: "Student" },
+  { value: "Professional", label: "Professional" },
+  { value: "Business Owner", label: "Business Owner" },
+  { value: "Developer", label: "Developer" },
+  { value: "Designer", label: "Designer" },
+  { value: "Other", label: "Other" },
+];
+
 const Login = () => {
   const [form] = Form.useForm();
+  const [budgetForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [googleCredential, setGoogleCredential] = useState(null);
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -48,9 +63,42 @@ const Login = () => {
         throw new Error("Google authentication failed");
       }
 
-      const response = await loginWithGoogle({
+      // First check if user exists
+      const userCheckResponse = await getUserByGoogleEmail({
         token: credentialResponse.credential,
       });
+
+      if (!userCheckResponse.data.data) {
+        // User doesn't exist, show budget modal
+        setGoogleCredential(credentialResponse.credential);
+        setShowBudgetModal(true);
+        setLoading(false);
+        return;
+      }
+
+      // User exists, proceed with normal login
+      await completeGoogleLogin(credentialResponse.credential);
+    } catch (error) {
+      console.error("Google login error:", error);
+      message.error(
+        error.message || "Failed to login with Google. Please try again."
+      );
+      setLoading(false);
+    }
+  };
+
+  const completeGoogleLogin = async (credential, budgetData = null) => {
+    try {
+      setLoading(true);
+      const loginData = {
+        token: credential,
+        ...(budgetData && {
+          title: budgetData.title,
+          budget: budgetData.budget,
+        }),
+      };
+
+      const response = await loginWithGoogle(loginData);
 
       if (response.data.success) {
         message.success("Successfully logged in with Google!");
@@ -72,6 +120,16 @@ const Login = () => {
     }
   };
 
+  const handleBudgetModalSubmit = async () => {
+    try {
+      const values = await budgetForm.validateFields();
+      setShowBudgetModal(false);
+      await completeGoogleLogin(googleCredential, values);
+    } catch (error) {
+      console.error("Form validation failed:", error);
+    }
+  };
+
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
@@ -87,7 +145,6 @@ const Login = () => {
       window.location.href = res.data.userData.isAdmin
         ? "/admin/dashboard"
         : "/dashboard";
-      // navigate(res.data.userData.isAdmin ? "/admin/dashboard" : "/dashboard");
     } catch (error) {
       message.error(error.message || "Login failed");
     } finally {
@@ -108,16 +165,22 @@ const Login = () => {
             }}
           >
             <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              <div style={{ textAlign: "center" }}>
-                {/* <img
-                  src="/assets/images/Logo1.png"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src="/assets/images/LogoTextLight.png"
                   style={{
                     maxWidth: 200,
                     width: "100%",
                     marginBottom: 24,
                   }}
                   alt="Logo"
-                /> */}
+                />
               </div>
 
               <div
@@ -127,7 +190,6 @@ const Login = () => {
                   gap: windowWidth <= 768 ? 32 : 48,
                 }}
               >
-                {/* Login Form Section */}
                 <div
                   style={{
                     flex: 1,
@@ -213,7 +275,13 @@ const Login = () => {
                         block
                         htmlType="submit"
                         loading={loading}
-                        style={{ height: 48, marginBottom: 24 }}
+                        style={{
+                          height: 48,
+                          marginBottom: 24,
+                          background: "#28A648",
+                          transition: "all 0.3s ease",
+                          boxShadow: "0 0 10px rgba(255, 140, 0, 0.2)",
+                        }}
                       >
                         Login
                       </Button>
@@ -252,7 +320,6 @@ const Login = () => {
                   </Spin>
                 </div>
 
-                {/* Right Section - Feature Highlights */}
                 {windowWidth > 768 && (
                   <div
                     style={{
@@ -293,6 +360,54 @@ const Login = () => {
         </div>
       </Content>
 
+      <Modal
+        title="Complete Your Profile"
+        open={showBudgetModal}
+        onOk={handleBudgetModalSubmit}
+        onCancel={() => {
+          setShowBudgetModal(false);
+          setGoogleCredential(null);
+          budgetForm.resetFields();
+        }}
+        okText="Complete Registration"
+        cancelText="Cancel"
+        confirmLoading={loading}
+        maskClosable={false}
+        style={{ top: 20 }}
+      >
+        <Form form={budgetForm} layout="vertical" requiredMark={false}>
+          <Form.Item
+            name="title"
+            label="What best describes you?"
+            rules={[{ required: true, message: "Please select your title" }]}
+          >
+            <Select
+              options={titleOptions}
+              placeholder="Select your title"
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="budget"
+            label="What's your monthly budget?"
+            rules={[
+              { required: true, message: "Please enter your monthly budget" },
+            ]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              min={0}
+              formatter={(value) =>
+                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              placeholder="Enter your monthly budget"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
       <style>
         {`
           @keyframes float {
@@ -316,15 +431,96 @@ const Login = () => {
           }
 
           .ant-input-affix-wrapper:hover {
-            border-color: #1890ff;
-          }
-
-          .ant-btn-primary {
-            background: linear-gradient(45deg, #1890ff, #096dd9);
+            border-color: #28A648;
           }
 
           .ant-btn-primary:hover {
-            background: linear-gradient(45deg, #40a9ff, #1890ff);
+            background: #28A648 !important;
+            border-color: #28A648 !important;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 1) !important;
+            transform: translateY(-1px);
+          }
+          
+          .ant-btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 1) !important;
+          }
+
+          .ant-modal-content,
+          .ant-modal-header {
+            background-color: #1f1f1f;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+          }
+
+          .ant-modal-title {
+            color: rgba(255, 255, 255, 0.85);
+          }
+
+          .ant-modal-close {
+            color: rgba(255, 255, 255, 0.45);
+          }
+
+          .ant-select-selector,
+          .ant-input-number {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+          }
+
+          .ant-select-selector:hover,
+          .ant-input-number:hover {
+            border-color: #28A648 !important;
+          }
+
+          .ant-select-focused .ant-select-selector,
+          .ant-input-number-focused {
+            border-color: #28A648 !important;
+            box-shadow: 0 0 0 2px rgba(40, 166, 72, 0.2) !important;
+          }
+
+          .ant-input-number-input {
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+
+          .ant-select-selection-placeholder,
+          .ant-input-number-input::placeholder {
+            color: rgba(255, 255, 255, 0.45) !important;
+          }
+
+          .ant-select-arrow {
+            color: rgba(255, 255, 255, 0.45);
+          }
+
+          .ant-select-dropdown {
+            background-color: #1f1f1f;
+          }
+
+          .ant-select-item {
+            color: rgba(255, 255, 255, 0.85);
+          }
+
+          .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+            background-color: rgba(255, 255, 255, 0.08);
+          }
+
+          .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+            background-color: rgba(40, 166, 72, 0.2);
+            color: #28A648;
+          }
+
+          .ant-form-item-label > label {
+            color: rgba(255, 255, 255, 0.85);
+          }
+
+          .ant-modal-footer .ant-btn {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.85);
+          }
+
+          .ant-modal-footer .ant-btn-primary {
+            background: #28A648;
+            border-color: #28A648;
+            color: white;
           }
         `}
       </style>
