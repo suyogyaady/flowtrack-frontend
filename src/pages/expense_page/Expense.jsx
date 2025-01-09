@@ -23,6 +23,8 @@ import {
 } from "@ant-design/icons";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 
+import { getAllExpensesApi } from "../../apis/Api";
+
 const { Title, Text } = Typography;
 const { Content } = Layout;
 

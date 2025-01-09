@@ -25,13 +25,27 @@ const TransactionModals = ({ onAdd }) => {
   const [expenseForm] = Form.useForm();
 
   const categoryOptions = {
-    income: ["Salary", "Investment", "Dividend", "Bonus", "Other"],
+    income: [
+      "Salary",
+      "Interest Received",
+      "Dividend",
+      "Bonus",
+      "Overtime",
+      "Rental Income",
+      "Investment",
+      "Pension",
+      "Other",
+    ],
     expense: [
       "Food",
       "Transportation",
-      "Entertainment",
-      "Shopping",
       "Utilities",
+      "Entertainment",
+      "Healthcare",
+      "Clothing",
+      "Education",
+      "Personal",
+      "Gifts",
       "Other",
     ],
   };

@@ -12,45 +12,117 @@ import {
   Tag,
   Tooltip,
   Space,
+  notification,
 } from "antd";
-import {
+import Icon, {
   PlusOutlined,
   SearchOutlined,
   BankOutlined,
   CalendarOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
+  MoneyCollectFilled,
+  DollarCircleOutlined,
+  StockOutlined,
+  GiftOutlined,
+  ClockCircleOutlined,
+  HomeOutlined,
+  FundOutlined,
+  SafetyOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip as RechartsTooltip,
+} from "recharts";
 import { getAllIncomesApi } from "../../apis/Api";
+import IncomeModals from "../../components/IncomeModal";
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
+const COLORS = {
+  Salary: "#2F54EB",
+  "Interest Received": "#13C2C2",
+  Dividend: "#52C41A",
+  Bonus: "#722ED1",
+  Overtime: "#FA8C16",
+  "Rental Income": "#EB2F96",
+  Investment: "#1890FF",
+  Pension: "#F5222D",
+  Other: "#8C8C8C",
+};
+
+const ICONS = {
+  Salary: DollarCircleOutlined,
+  "Interest Received": BankOutlined,
+  Dividend: StockOutlined,
+  Bonus: GiftOutlined,
+  Overtime: ClockCircleOutlined,
+  "Rental Income": HomeOutlined,
+  Investment: FundOutlined,
+  Pension: SafetyOutlined,
+  Other: QuestionCircleOutlined,
+};
+
 const Income = () => {
   const [incomes, setIncomes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [openIncomeModal, setOpenIncomeModal] = useState(false);
 
   useEffect(() => {
-    getAllIncomesApi()
-      .then((res) => {
-        setIncomes(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    fetchIncomes();
   }, []);
 
-  const chartData = [
-    { name: "Employment", value: 85000, color: "#52C41A" },
-    { name: "Freelance", value: 25000, color: "#4DABF7" },
-    { name: "Investment", value: 7500, color: "#51CF66" },
-    { name: "Real Estate", value: 35000, color: "#845EF7" },
-    { name: "Business", value: 45000, color: "#FCC419" },
-  ];
+  const fetchIncomes = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllIncomesApi();
+      setIncomes(response.data);
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to fetch income data",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const processChartData = (incomes) => {
+    const categoryTotals = {};
+    incomes.forEach((income) => {
+      const category = income.IncomeID.incomeCategory;
+      categoryTotals[category] =
+        (categoryTotals[category] || 0) + income.amount;
+    });
+
+    return Object.entries(categoryTotals).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  };
 
   const getCategoryColor = (category) => {
-    const categoryData = chartData.find((item) => item.name === category);
-    return categoryData ? categoryData.color : "#1890ff";
+    return "#1890ff";
+  };
+
+  const getCategoryColorForPie = (category) => {
+    return COLORS[category] || "#1890ff";
+  };
+
+  const getIcon = (category) => {
+    return (
+      <Icon
+        component={ICONS[category]}
+        style={{ color: "#1890ff", fontSize: "24px" }}
+      />
+    );
   };
 
   const renderCustomizedLabel = ({
@@ -79,23 +151,37 @@ const Income = () => {
     );
   };
 
+  const filteredIncomes = incomes.filter(
+    (income) =>
+      income.IncomeID.incomeName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      income.IncomeID.incomeCategory
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+  );
+
+  const onAdd = () => {
+    fetchIncomes();
+  };
+
   const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
-  const highestIncome = Math.max(...incomes.map((income) => income.amount));
-  const averageIncome = totalIncome / incomes.length;
+  const highestIncome = Math.max(...incomes.map((income) => income.amount), 0);
+  const averageIncome = incomes.length ? totalIncome / incomes.length : 0;
+
+  const chartData = processChartData(incomes);
 
   return (
-    <Content style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
+    <Content style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
       {/* Header */}
       <Row
         justify="space-between"
         align="middle"
-        style={{ marginBottom: 24 }}
         gutter={[16, 16]}
+        className="mb-6"
       >
         <Col xs={24} sm={24} md={8}>
-          <Title level={2} style={{ margin: 0, color: "#fff" }}>
-            Income Tracker
-          </Title>
+          <Title level={2}>Income Tracker</Title>
         </Col>
         <Col xs={24} sm={24} md={16}>
           <Row gutter={16} justify="end">
@@ -103,14 +189,16 @@ const Income = () => {
               <Input
                 placeholder="Search income..."
                 prefix={<SearchOutlined />}
-                style={{ width: "100%" }}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchQuery}
               />
             </Col>
             <Col xs={24} sm={12}>
               <Button
                 type="primary"
+                onClick={() => setOpenIncomeModal(true)}
                 icon={<PlusOutlined />}
-                style={{ width: "100%" }}
+                block
               >
                 Add Income
               </Button>
@@ -119,61 +207,55 @@ const Income = () => {
         </Col>
       </Row>
 
+      {/* Statistics Cards */}
+      <Row gutter={[16, 16]} className="mb-6">
+        <Col xs={24} sm={8}>
+          <Card bordered={false}>
+            <Statistic
+              title="Total Income"
+              value={totalIncome}
+              precision={2}
+              prefix="Rs."
+              valueStyle={{ color: "#52C41A" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card bordered={false}>
+            <Statistic
+              title="Highest Income"
+              value={highestIncome}
+              precision={2}
+              prefix="Rs."
+              valueStyle={{ color: "#52C41A" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card bordered={false}>
+            <Statistic
+              title="Average Income"
+              value={averageIncome}
+              precision={2}
+              prefix="Rs."
+              valueStyle={{ color: "#52C41A" }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
       {/* Main Content */}
       <Row gutter={[24, 24]}>
-        {/* Quick Stats Cards */}
-        <Col xs={24}>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} lg={8}>
-              <Card bordered={false} style={{ height: "100%" }}>
-                <Statistic
-                  title="Total Income"
-                  value={totalIncome}
-                  precision={2}
-                  prefix="Rs."
-                  valueStyle={{ color: "#52C41A" }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={8}>
-              <Card bordered={false} style={{ height: "100%" }}>
-                <Statistic
-                  title="Highest Income"
-                  value={highestIncome}
-                  precision={2}
-                  prefix="Rs."
-                  valueStyle={{ color: "#52C41A" }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={8}>
-              <Card bordered={false} style={{ height: "100%" }}>
-                <Statistic
-                  title="Average Income"
-                  value={averageIncome}
-                  precision={2}
-                  prefix="Rs."
-                  valueStyle={{ color: "#52C41A" }}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </Col>
-
         {/* Income List */}
         <Col xs={24} lg={16}>
           <Card bordered={false}>
             <List
-              dataSource={incomes}
+              loading={loading}
+              dataSource={filteredIncomes}
               renderItem={(income) => (
                 <List.Item
                   key={income._id}
-                  style={{
-                    padding: "16px",
-                    borderRadius: "8px",
-                    marginBottom: "8px",
-                    background: "rgba(255, 255, 255, 0.04)",
-                  }}
+                  className="rounded-lg mb-2 bg-gray-50"
                 >
                   <List.Item.Meta
                     avatar={
@@ -186,35 +268,36 @@ const Income = () => {
                           borderRadius: 12,
                         }}
                       >
-                        <BankOutlined
-                          style={{
-                            fontSize: 24,
-                            color: getCategoryColor(
-                              income.IncomeID.incomeCategory
-                            ),
-                          }}
-                        />
+                        {getIcon(income.IncomeID.incomeCategory)}
                       </div>
                     }
                     title={
-                      <Space align="center">
-                        <Text strong style={{ fontSize: 16 }}>
-                          {income.IncomeID.incomeName}
-                        </Text>
-                        <Tag color={getCategoryColor(income.IncomeID.category)}>
+                      <Space>
+                        <Text strong>{income.IncomeID.incomeName}</Text>
+                        <Tag
+                          color={getCategoryColor(
+                            income.IncomeID.incomeCategory
+                          )}
+                        >
                           {income.IncomeID.incomeCategory}
                         </Tag>
                       </Space>
                     }
                     description={
                       <Text type="secondary">
-                        <CalendarOutlined style={{ marginRight: 8 }} />
-                        {income.IncomeID.incomeDate}
+                        <CalendarOutlined className="mr-2" />
+                        {new Date(
+                          income.IncomeID.incomeDate
+                        ).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
                       </Text>
                     }
                   />
                   <Space direction="vertical" align="end">
-                    <Text strong style={{ fontSize: 18 }}>
+                    <Text strong className="text-lg">
                       Rs.{income.amount.toLocaleString()}
                     </Text>
                     <Tooltip
@@ -224,15 +307,15 @@ const Income = () => {
                           : "Lower than last month"
                       }
                     >
-                      {income.trend === "up" ? (
-                        <Tag color="green">
+                      {/* {income.trend === "up" ? (
+                        <Tag color="success">
                           <ArrowUpOutlined /> Increased
                         </Tag>
                       ) : (
-                        <Tag color="red">
+                        <Tag color="error">
                           <ArrowDownOutlined /> Decreased
                         </Tag>
-                      )}
+                      )} */}
                     </Tooltip>
                   </Space>
                 </List.Item>
@@ -241,26 +324,35 @@ const Income = () => {
           </Card>
         </Col>
 
-        {/* Charts */}
+        {/* Chart */}
         <Col xs={24} lg={8}>
-          <Card bordered={false} style={{ marginBottom: 24 }}>
-            <Title level={4}>Income Overview</Title>
+          <Card bordered={false}>
+            <Title level={4}>Income Distribution</Title>
             <div style={{ height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={chartData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
                     label={renderCustomizedLabel}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={index} fill={entry.color} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          // Auto fill color without categort name
+                          getCategoryColorForPie(entry.name)
+                        }
+                      />
                     ))}
                   </Pie>
                   <Legend />
+                  <RechartsTooltip />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -270,8 +362,8 @@ const Income = () => {
               renderItem={(item) => (
                 <List.Item
                   extra={
-                    <Text strong style={{ color: item.color }}>
-                      Rs.{item.value.toLocaleString()}
+                    <Text strong style={{ color: getCategoryColor(item.name) }}>
+                      ${item.value.toLocaleString()}
                     </Text>
                   }
                 >
@@ -281,7 +373,7 @@ const Income = () => {
                         width: 12,
                         height: 12,
                         borderRadius: "50%",
-                        backgroundColor: item.color,
+                        backgroundColor: getCategoryColor(item.name),
                       }}
                     />
                     <Text>{item.name}</Text>
@@ -292,6 +384,13 @@ const Income = () => {
           </Card>
         </Col>
       </Row>
+      <IncomeModals
+        open={openIncomeModal}
+        onClose={() => {
+          setOpenIncomeModal(false);
+        }}
+        onAdd={onAdd}
+      />
     </Content>
   );
 };

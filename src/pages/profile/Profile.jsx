@@ -40,6 +40,7 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [title, setTitle] = useState("");
   const [user, setUser] = useState(null);
+  const [isGoogle, setIsGoogle] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -87,10 +88,14 @@ const Profile = () => {
   const fetchProfileData = async () => {
     try {
       const res = await getSingleprofileApi();
-      const { username, email, title, profilePicture } = res.data.user;
+      const { username, email, title, profilePicture, isGoogle } =
+        res.data.user;
       setUsername(username);
       setEmail(email);
       setTitle(title);
+      setIsGoogle(isGoogle);
+      console.log(isGoogle);
+
       setPreviewImage(profilePicture);
       form.setFieldsValue({ username, email, title });
     } catch (error) {
@@ -105,32 +110,26 @@ const Profile = () => {
   }, []);
 
   const handleImageUpload = async (info) => {
-    if (info.file.status === "uploading") {
+    const formData = new FormData();
+    formData.append("newImage", info);
+
+    try {
       setIsLoading(true);
-      return;
-    }
-
-    if (info.file.status === "done") {
-      const formData = new FormData();
-      formData.append("newImage", info.file.originFileObj);
-
-      try {
-        const res = await uploadProfilePictureApi(formData);
-        if (res.status === 200) {
-          message.success({
-            content: "Profile picture updated successfully",
-            icon: <CloudUploadOutlined style={{ color: token.colorSuccess }} />,
-          });
-          await fetchProfileData();
-        }
-      } catch (error) {
-        message.error({
-          content: "Failed to upload profile picture",
-          icon: <CloudUploadOutlined style={{ color: token.colorError }} />,
+      const res = await uploadProfilePictureApi(formData);
+      if (res.status === 200) {
+        message.success({
+          content: "Profile picture updated successfully",
+          icon: <CloudUploadOutlined style={{ color: token.colorSuccess }} />,
         });
-      } finally {
-        setIsLoading(false);
+        await fetchProfileData();
       }
+    } catch (error) {
+      message.error({
+        content: "Failed to upload profile picture",
+        icon: <CloudUploadOutlined style={{ color: token.colorError }} />,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -199,6 +198,9 @@ const Profile = () => {
               listType="picture-circle"
               className="avatar-uploader"
               showUploadList={false}
+              beforeUpload={(file) => {
+                handleImageUpload(file);
+              }}
               onChange={handleImageUpload}
             >
               <div
@@ -210,7 +212,37 @@ const Profile = () => {
                   position: "relative",
                 }}
               >
-                {previewImage ? (
+                {isGoogle ? (
+                  <>
+                    <img
+                      src={previewImage}
+                      alt="avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        background: "rgba(0,0,0,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                        transition: "opacity 0.3s",
+                        ":hover": { opacity: 1 },
+                      }}
+                    >
+                      <CameraOutlined style={{ fontSize: 24, color: "#fff" }} />
+                    </div>
+                  </>
+                ) : (
                   <>
                     <img
                       src={`http://localhost:5000${previewImage}`}
@@ -240,27 +272,6 @@ const Profile = () => {
                       <CameraOutlined style={{ fontSize: 24, color: "#fff" }} />
                     </div>
                   </>
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: token.colorFillSecondary,
-                    }}
-                  >
-                    <CameraOutlined
-                      style={{ fontSize: 24, color: token.colorTextSecondary }}
-                    />
-                    <Text
-                      style={{ marginTop: 8, color: token.colorTextSecondary }}
-                    >
-                      Upload
-                    </Text>
-                  </div>
                 )}
               </div>
             </Upload>
