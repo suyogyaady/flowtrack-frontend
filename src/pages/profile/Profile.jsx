@@ -201,7 +201,6 @@ const Profile = () => {
               beforeUpload={(file) => {
                 handleImageUpload(file);
               }}
-              onChange={handleImageUpload}
             >
               <div
                 style={{

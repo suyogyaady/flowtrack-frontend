@@ -1,10 +1,16 @@
 import React from "react";
-import { Layout, Button, Typography } from "antd";
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Grid,
+  Typography,
+  Paper,
+  Toolbar,
+} from "@mui/material";
 import { ArrowRight, PieChart, TrendingUp, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const { Header, Content, Footer } = Layout;
-const { Title, Paragraph } = Typography;
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -30,119 +36,172 @@ const LandingPage = () => {
   ];
 
   return (
-    <Layout className="min-h-screen bg-slate-900">
+    <Box sx={{ minHeight: "100vh", bgcolor: "grey.900" }}>
       {/* Header */}
-      <Header className="fixed w-full z-10 bg-slate-900 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-          <div className="text-2xl font-bold text-white">FlowTrack</div>
-          <div className="flex gap-4">
-            <Button
-              onClick={() => navigate("/login")}
-              className="bg-transparent"
+      <AppBar
+        position="fixed"
+        sx={{ bgcolor: "grey.900", borderBottom: 1, borderColor: "grey.800" }}
+      >
+        <Toolbar>
+          <Container
+            maxWidth="lg"
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{ fontWeight: "bold" }}
             >
-              Login
-            </Button>
-            <Button
-              type="primary"
-              onClick={() => navigate("/signup")}
-              className="bg-blue-500"
-            >
-              Sign Up
-            </Button>
-          </div>
-        </div>
-      </Header>
+              FlowTrack
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Button
+                variant="text"
+                onClick={() => navigate("/login")}
+                sx={{ color: "white" }}
+              >
+                Login
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/signup")}
+                sx={{ bgcolor: "primary.main" }}
+              >
+                Sign Up
+              </Button>
+            </Box>
+          </Container>
+        </Toolbar>
+      </AppBar>
 
       {/* Main Content */}
-      <Content className="pt-16">
+      <Box component="main" sx={{ pt: 8 }}>
         {/* Hero Section */}
-        <div className="bg-slate-900">
-          <div className="max-w-7xl mx-auto px-4 py-24">
-            <div className="text-center">
-              <Title
-                level={1}
-                className="text-4xl md:text-6xl font-bold text-white mb-6"
+        <Box sx={{ bgcolor: "grey.900", py: 12 }}>
+          <Container maxWidth="lg">
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontSize: { xs: "2.5rem", md: "3.75rem" },
+                  fontWeight: "bold",
+                  mb: 3,
+                }}
               >
                 Track Your Finances with
-                <span className="text-blue-500"> Precision</span>
-              </Title>
-              <Paragraph className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+                <Box component="span" sx={{ color: "primary.main" }}>
+                  {" "}
+                  Precision
+                </Box>
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "grey.400",
+                  mb: 4,
+                  maxWidth: "xl",
+                  mx: "auto",
+                }}
+              >
                 Take control of your financial future with FlowTrack. Smart
                 tracking, intuitive analytics, and personalized insights all in
                 one place.
-              </Paragraph>
+              </Typography>
               <Button
-                type="primary"
+                variant="contained"
                 size="large"
                 onClick={() => navigate("/signup")}
-                className="bg-blue-500 h-12 px-8"
+                sx={{ height: 48, px: 4 }}
+                endIcon={<ArrowRight />}
               >
                 Get Started
-                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Container>
+        </Box>
 
         {/* Features Section */}
-        <div className="bg-slate-800">
-          <div className="max-w-7xl mx-auto px-4 py-24">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <Box sx={{ bgcolor: "grey.800", py: 12 }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={4}>
               {features.map((feature, index) => (
-                <div key={index} className="bg-slate-700 p-6 rounded-lg">
-                  <div className="mb-4 text-blue-500">{feature.icon}</div>
-                  <Title level={3} className="text-white mb-4">
-                    {feature.title}
-                  </Title>
-                  <Paragraph className="text-slate-300">
-                    {feature.description}
-                  </Paragraph>
-                </div>
+                <Grid item xs={12} md={4} key={index}>
+                  <Paper
+                    sx={{
+                      bgcolor: "grey.700",
+                      p: 3,
+                      borderRadius: 2,
+                      height: "100%",
+                    }}
+                  >
+                    <Box sx={{ color: "primary.main", mb: 2 }}>
+                      {feature.icon}
+                    </Box>
+                    <Typography variant="h5" sx={{ color: "white", mb: 2 }}>
+                      {feature.title}
+                    </Typography>
+                    <Typography sx={{ color: "grey.400" }}>
+                      {feature.description}
+                    </Typography>
+                  </Paper>
+                </Grid>
               ))}
-            </div>
-          </div>
-        </div>
+            </Grid>
+          </Container>
+        </Box>
 
         {/* Stats Section */}
-        <div className="bg-slate-900">
-          <div className="max-w-7xl mx-auto px-4 py-24">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div>
-                <Title level={2} className="text-white mb-2">
+        <Box sx={{ bgcolor: "grey.900", py: 12 }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={4} textAlign="center">
+              <Grid item xs={12} md={4}>
+                <Typography variant="h3" sx={{ color: "white", mb: 1 }}>
                   50K+
-                </Title>
-                <Paragraph className="text-slate-300">Active Users</Paragraph>
-              </div>
-              <div>
-                <Title level={2} className="text-white mb-2">
+                </Typography>
+                <Typography sx={{ color: "grey.400" }}>Active Users</Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="h3" sx={{ color: "white", mb: 1 }}>
                   $2M+
-                </Title>
-                <Paragraph className="text-slate-300">
+                </Typography>
+                <Typography sx={{ color: "grey.400" }}>
                   Tracked Monthly
-                </Paragraph>
-              </div>
-              <div>
-                <Title level={2} className="text-white mb-2">
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="h3" sx={{ color: "white", mb: 1 }}>
                   98%
-                </Title>
-                <Paragraph className="text-slate-300">
+                </Typography>
+                <Typography sx={{ color: "grey.400" }}>
                   User Satisfaction
-                </Paragraph>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Content>
+                </Typography>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      </Box>
 
       {/* Footer */}
-      <Footer className="bg-slate-900 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center text-slate-300">
+      <Box
+        component="footer"
+        sx={{
+          bgcolor: "grey.900",
+          borderTop: 1,
+          borderColor: "grey.800",
+          py: 3,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Typography align="center" sx={{ color: "grey.400" }}>
             © 2025 FlowTrack. All rights reserved.
-          </div>
-        </div>
-      </Footer>
-    </Layout>
+          </Typography>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 

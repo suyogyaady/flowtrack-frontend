@@ -64,6 +64,7 @@ export const createExpenseApi = (data) =>
   Api.post("/api/expense/create_expense", data, config);
 
 // create transaction
+
 export const createTransactionApi = (data) =>
   Api.post("/api/transaction/create_transaction", data, jsonConfig);
 
@@ -73,7 +74,7 @@ export const createIncomeApi = (data) =>
 
 // Get All Expenses
 export const getAllExpensesApi = () =>
-  Api.get("/api/transaction/get_total_expense", jsonConfig);
+  Api.get("/api/transaction/get_all_expense", jsonConfig);
 
 // Get All Incomes
 export const getAllIncomesApi = () =>
@@ -94,3 +95,25 @@ export const getAllTransactionsApi = () =>
 // Get Transactions By User
 export const getTransactionsByUserApi = () =>
   Api.get("/api/transaction/get_all_transactions_by_user", jsonConfig);
+
+// delete_income
+export const deleteIncomeApi = (id) =>
+  Api.delete(`/api/income/delete_income/${id}`, config);
+
+// delete_expense
+export const deleteExpenseApi = (id) =>
+  Api.delete(`/api/expense/delete_expense/${id}`, config);
+
+// get_transactions_by_month;
+export const getTransactionsByMonthApi = (year) =>
+  Api.get(
+    "/api/transaction/get_transactions_by_month?year=" + year,
+    jsonConfig
+  );
+
+// get_monthly_transactions_with_budget
+export const getMonthlyTransactionsWithBudgetApi = (year) =>
+  Api.get(
+    "/api/transaction/get_monthly_transactions_with_budget?year=" + year,
+    jsonConfig
+  );

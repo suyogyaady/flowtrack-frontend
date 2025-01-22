@@ -46,9 +46,9 @@ const { Title, Text } = Typography;
 const { Content } = Layout;
 
 const COLORS = {
-  Salary: "#2F54EB",
+  Salary: "#52C41A",
   "Interest Received": "#13C2C2",
-  Dividend: "#52C41A",
+  Dividend: "#2F54EB",
   Bonus: "#722ED1",
   Overtime: "#FA8C16",
   "Rental Income": "#EB2F96",
@@ -109,7 +109,7 @@ const Income = () => {
   };
 
   const getCategoryColor = (category) => {
-    return "#1890ff";
+    return COLORS[category] || "#1890ff";
   };
 
   const getCategoryColorForPie = (category) => {
@@ -120,7 +120,7 @@ const Income = () => {
     return (
       <Icon
         component={ICONS[category]}
-        style={{ color: "#1890ff", fontSize: "24px" }}
+        style={{ color: getCategoryColor(category), fontSize: "24px" }}
       />
     );
   };
@@ -227,7 +227,7 @@ const Income = () => {
               value={highestIncome}
               precision={2}
               prefix="Rs."
-              valueStyle={{ color: "#52C41A" }}
+              valueStyle={{ color: "#2F54EB" }}
             />
           </Card>
         </Col>
@@ -238,7 +238,7 @@ const Income = () => {
               value={averageIncome}
               precision={2}
               prefix="Rs."
-              valueStyle={{ color: "#52C41A" }}
+              valueStyle={{ color: "#FA8C16" }}
             />
           </Card>
         </Col>

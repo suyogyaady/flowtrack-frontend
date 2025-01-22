@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import {
   Table,
   Input,
@@ -15,6 +16,8 @@ import {
   Typography,
   Tooltip,
   Statistic,
+  Menu,
+  Dropdown,
 } from "antd";
 import {
   PlusOutlined,
@@ -24,53 +27,47 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
   FilterOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
+import {
+  deleteExpenseApi,
+  deleteIncomeApi,
+  getSingleprofileApi,
+  getTransactionsByUserApi,
+} from "../../apis/Api";
+import TransactionModals from "../../components/transactionModels";
 
 const { Title, Text } = Typography;
 
 const Transaction = () => {
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      name: "KFC",
-      amount: 5500,
-      type: "Food",
-      category: "expense",
-      date: "2024-02-17",
-    },
-    {
-      id: 2,
-      name: "April Salary",
-      amount: 50000,
-      type: "Salary",
-      category: "income",
-      date: "2024-05-21",
-    },
-    {
-      id: 3,
-      name: "Pushpa 2",
-      amount: 2100,
-      type: "Entertainment",
-      category: "expense",
-      date: "2024-06-06",
-    },
-    {
-      id: 4,
-      name: "Polo",
-      amount: 6500,
-      type: "Clothes",
-      category: "expense",
-      date: "2024-08-19",
-    },
-    {
-      id: 5,
-      name: "Vision Dividend",
-      amount: 175000,
-      type: "Income",
-      category: "income",
-      date: "2024-12-07",
-    },
-  ]);
+  const [transactions, setTransactions] = useState([]);
+  const [change, setChange] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+
+    getSingleprofileApi()
+      .then((res) => {
+        const { budget } = res.data.user;
+        setUser(res.data.user);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error(error);
+        setIsLoading(false);
+      });
+
+    getTransactionsByUserApi()
+      .then((res) => {
+        setTransactions(res.data);
+      })
+      .catch((err) => console.log(err));
+  }, [change]);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -82,21 +79,75 @@ const Transaction = () => {
   const [editingRecord, setEditingRecord] = useState(null);
 
   const totalIncome = transactions
-    .filter((t) => t.category === "income")
+    .filter((t) => t.transactionType.toLowerCase() === "income")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = transactions
-    .filter((t) => t.category === "expense")
+    .filter((t) => t.transactionType.toLowerCase() === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const balance = totalIncome - totalExpense;
+
+  const handleExport = (format) => {
+    const dataToExport = filteredTransactions.map((t) => ({
+      Name: t.IncomeID ? t.IncomeID.incomeName : t.ExpenseID.expenseName,
+      Amount: t.amount,
+      Category: t.IncomeID
+        ? t.IncomeID.incomeCategory
+        : t.ExpenseID.expenseCategory,
+      Date: new Date(t.transactionDate).toLocaleDateString("en-GB"),
+      Type: t.transactionType,
+    }));
+
+    let content = "";
+    let fileName = `transactions_${new Date().toISOString().split("T")[0]}`;
+
+    if (format === "csv") {
+      const headers = Object.keys(dataToExport[0]).join(",");
+      const rows = dataToExport.map((row) => Object.values(row).join(","));
+      content = [headers, ...rows].join("\n");
+      fileName += ".csv";
+    } else if (format === "json") {
+      content = JSON.stringify(dataToExport, null, 2);
+      fileName += ".json";
+    }
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportMenu = (
+    <Menu>
+      <Menu.Item key="1" onClick={() => handleExport("csv")}>
+        Export as CSV
+      </Menu.Item>
+      <Menu.Item key="2" onClick={() => handleExport("json")}>
+        Export as JSON
+      </Menu.Item>
+    </Menu>
+  );
 
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (text, record) => <Text strong>{text}</Text>,
+      render: (text, record) => (
+        <Text strong>
+          {record.IncomeID
+            ? record.IncomeID.incomeName
+            : record.ExpenseID
+            ? record.ExpenseID.expenseName
+            : ""}
+        </Text>
+      ),
     },
     {
       title: "Amount",
@@ -106,25 +157,36 @@ const Transaction = () => {
         <Text
           strong
           style={{
-            color: record.category === "income" ? "#52C41A" : "#ff4d4f",
+            color:
+              record.transactionType.toLowerCase() === "income"
+                ? "#52C41A"
+                : "#ff4d4f",
             fontSize: "16px",
           }}
         >
-          {record.category === "income" ? "₹" : "-₹"}
+          {record.transactionType.toLowerCase() === "income" ? "₹" : "-₹"}
           {amount.toLocaleString()}
         </Text>
       ),
     },
     {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      render: (type) => <Tag color="blue">{type}</Tag>,
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      render: (text, record) => (
+        <Tag color="blue">
+          {record.IncomeID
+            ? record.IncomeID.incomeCategory
+            : record.ExpenseID
+            ? record.ExpenseID.expenseCategory
+            : ""}
+        </Tag>
+      ),
     },
     {
       title: "Date",
-      dataIndex: "date",
-      key: "date",
+      dataIndex: "transactionDate",
+      key: "transactionDate",
       render: (date) => (
         <Text>
           {new Date(date).toLocaleDateString("en-GB", {
@@ -136,12 +198,16 @@ const Transaction = () => {
       ),
     },
     {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-      render: (category) => (
-        <Tag color={category === "income" ? "success" : "error"}>
-          {category.toUpperCase()}
+      title: "Transaction Type",
+      dataIndex: "transactionType",
+      key: "transactionType",
+      render: (transactionType) => (
+        <Tag
+          color={
+            transactionType.toLowerCase() === "income" ? "success" : "error"
+          }
+        >
+          {transactionType}
         </Tag>
       ),
     },
@@ -150,20 +216,12 @@ const Transaction = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              style={{ color: "#1890ff" }}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
           <Tooltip title="Delete">
             <Button
               type="text"
               icon={<DeleteOutlined />}
               style={{ color: "#ff4d4f" }}
-              onClick={() => handleDelete(record.id)}
+              onClick={() => handleDelete(record._id, record.transactionType)}
             />
           </Tooltip>
         </Space>
@@ -171,7 +229,7 @@ const Transaction = () => {
     },
   ];
 
-  const handleDelete = (id) => {
+  const handleDelete = (id, transactionType) => {
     Modal.confirm({
       title: "Are you sure you want to delete this transaction?",
       content: "This action cannot be undone.",
@@ -179,38 +237,73 @@ const Transaction = () => {
       okType: "danger",
       cancelText: "No",
       onOk: () => {
-        setTransactions(transactions.filter((t) => t.id !== id));
+        console.log("Api call here");
+        if (transactionType.toLowerCase() === "income") {
+          deleteIncomeApi(id)
+            .then(() => {
+              setChange(!change);
+            })
+            .catch((err) => console.log(err));
+        }
+        if (transactionType.toLowerCase() === "expense") {
+          deleteExpenseApi(id)
+            .then(() => {
+              setChange(!change);
+            })
+            .catch((err) => console.log(err));
+        }
       },
     });
   };
 
   const handleEdit = (record) => {
+    const initialValues = {
+      name: record.IncomeID
+        ? record.IncomeID.incomeName
+        : record.ExpenseID.expenseName,
+      amount: record.amount,
+      type: record.IncomeID
+        ? record.IncomeID.incomeCategory
+        : record.ExpenseID.expenseCategory,
+      category: record.transactionType.toLowerCase(),
+      date: record.transactionDate ? dayjs(record.transactionDate) : null,
+    };
+
     setEditingRecord(record);
-    form.setFieldsValue({
-      ...record,
-      date: record.date ? new Date(record.date) : null,
-    });
+    form.setFieldsValue(initialValues);
     setIsModalVisible(true);
   };
 
   const handleSubmit = (values) => {
     const formattedValues = {
-      ...values,
-      date: values.date.format("YYYY-MM-DD"),
+      transactionDate: values.date.format("YYYY-MM-DD"),
       amount: Number(values.amount),
+      transactionType:
+        values.category.charAt(0).toUpperCase() + values.category.slice(1),
+      [values.category.toLowerCase() === "income" ? "IncomeID" : "ExpenseID"]: {
+        [values.category.toLowerCase() === "income"
+          ? "incomeName"
+          : "expenseName"]: values.name,
+        [values.category.toLowerCase() === "income"
+          ? "incomeAmount"
+          : "expenseAmount"]: Number(values.amount),
+        [values.category.toLowerCase() === "income"
+          ? "incomeCategory"
+          : "expenseCategory"]: values.type,
+      },
     };
 
     if (editingRecord) {
       setTransactions(
         transactions.map((t) =>
-          t.id === editingRecord.id
-            ? { ...formattedValues, id: editingRecord.id }
+          t._id === editingRecord._id
+            ? { ...formattedValues, _id: editingRecord._id }
             : t
         )
       );
     } else {
       const newTransaction = {
-        id: Math.max(...transactions.map((t) => t.id)) + 1,
+        _id: Math.random().toString(36).substr(2, 9),
         ...formattedValues,
       };
       setTransactions([...transactions, newTransaction]);
@@ -222,13 +315,26 @@ const Transaction = () => {
   };
 
   const filteredTransactions = transactions.filter((t) => {
+    const name = t.IncomeID
+      ? t.IncomeID.incomeName
+      : t.ExpenseID
+      ? t.ExpenseID.expenseName
+      : "";
     const searchMatch =
-      t.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      t.type.toLowerCase().includes(filters.search.toLowerCase());
-    const categoryMatch = !filters.category || t.category === filters.category;
+      name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      t.transactionType.toLowerCase().includes(filters.search.toLowerCase());
+    const categoryMatch =
+      !filters.category || t.transactionType.toLowerCase() === filters.category;
     const typeMatch =
       !filters.type ||
-      t.type.toLowerCase().includes(filters.type.toLowerCase());
+      (t.IncomeID
+        ? t.IncomeID.incomeCategory
+        : t.ExpenseID
+        ? t.ExpenseID.expenseCategory
+        : ""
+      )
+        .toLowerCase()
+        .includes(filters.type.toLowerCase());
 
     return searchMatch && categoryMatch && typeMatch;
   });
@@ -304,28 +410,16 @@ const Transaction = () => {
               onChange={(e) => setFilters({ ...filters, type: e.target.value })}
               style={{ width: 200 }}
             />
+            <Dropdown overlay={exportMenu}>
+              <Button icon={<DownloadOutlined />}>Save As</Button>
+            </Dropdown>
           </Space>
         </Col>
         <Col
           xs={24}
           md={8}
           style={{ textAlign: "right", marginTop: { xs: 16, md: 0 } }}
-        >
-          <Space wrap style={{ justifyContent: "flex-end" }}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setEditingRecord(null);
-                form.resetFields();
-                setIsModalVisible(true);
-              }}
-              style={{ backgroundColor: "#52C41A" }}
-            >
-              Add Transaction
-            </Button>
-          </Space>
-        </Col>
+        ></Col>
       </Row>
 
       {/* Transaction Table */}
@@ -333,7 +427,7 @@ const Transaction = () => {
         <Table
           columns={columns}
           dataSource={filteredTransactions}
-          rowKey="id"
+          rowKey="_id"
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
@@ -379,7 +473,20 @@ const Transaction = () => {
             label="Type"
             rules={[{ required: true, message: "Please input the type!" }]}
           >
-            <Input />
+            <Select>
+              <Select.Option value="Salary">Salary</Select.Option>
+              <Select.Option value="Investment">Investment</Select.Option>
+              <Select.Option value="Savings">Savings</Select.Option>
+              <Select.Option value="Rent">Rent</Select.Option>
+              <Select.Option value="Bills">Bills</Select.Option>
+              <Select.Option value="Food">Food</Select.Option>
+              <Select.Option value="Shopping">Shopping</Select.Option>
+              <Select.Option value="Travel">Travel</Select.Option>
+              <Select.Option value="Entertainment">Entertainment</Select.Option>
+              <Select.Option value="Education">Education</Select.Option>
+              <Select.Option value="Healthcare">Healthcare</Select.Option>
+              <Select.Option value="Other">Other</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item
             name="category"
@@ -420,6 +527,12 @@ const Transaction = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <TransactionModals
+        onAdd={() => {
+          setChange(!change);
+        }}
+      />
     </div>
   );
 };

@@ -16,6 +16,7 @@ import Income from "./pages/income_page/Income";
 import Report from "./pages/reports_page/Report";
 import "./App.css";
 import "antd/dist/reset.css";
+import FinancialAnalytics from "./pages/Analytics/Analytics";
 
 const customTheme = {
   token: {
@@ -112,6 +113,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Report />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <FinancialAnalytics />
                 </ProtectedRoute>
               }
             />
