@@ -80,8 +80,6 @@ const TransactionModals = ({ onAdd }) => {
           .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
-    // incomeForm.resetFields();
-    // setIsIncomeModalOpen(false);
   };
 
   const handleExpenseSubmit = (values) => {
@@ -106,7 +104,7 @@ const TransactionModals = ({ onAdd }) => {
           transactionDate: values.date.format("YYYY-MM-DD"),
         })
           .then((res) => {
-            message.success("Income added successfully!");
+            message.success("Expense added successfully!");
             expenseForm.resetFields();
             setIsExpenseModalOpen(false);
             onAdd();
@@ -114,9 +112,6 @@ const TransactionModals = ({ onAdd }) => {
           .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
-
-    // expenseForm.resetFields();
-    // setIsExpenseModalOpen(false);
   };
 
   const FormContent = ({ categories }) => (

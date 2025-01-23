@@ -147,7 +147,7 @@ const Profile = () => {
           content: "Profile updated successfully",
           icon: <EditOutlined style={{ color: token.colorSuccess }} />,
         });
-        await fetchProfileData();
+        window.location.reload();
       }
     } catch (error) {
       message.error({

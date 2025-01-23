@@ -117,3 +117,11 @@ export const getMonthlyTransactionsWithBudgetApi = (year) =>
     "/api/transaction/get_monthly_transactions_with_budget?year=" + year,
     jsonConfig
   );
+
+// send_password_reset_email
+export const sendPasswordResetEmail = (email) =>
+  Api.put("/api/user/send_password_reset_email", { email }, jsonConfig);
+
+// reset_password
+export const resetPassword = (data) =>
+  Api.put("/api/user/reset_password", data, jsonConfig);

@@ -28,6 +28,7 @@ import {
   loginUserApi,
   loginWithGoogle,
 } from "../../apis/Api";
+import ForgotPasswordModal from "../../components/ForgotPassword";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -49,6 +50,7 @@ const Login = () => {
   const [googleCredential, setGoogleCredential] = useState(null);
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isForgotPasswordVisible, setIsForgotPasswordVisible] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -265,7 +267,9 @@ const Login = () => {
                       </Form.Item>
 
                       <div style={{ textAlign: "right", marginBottom: 24 }}>
-                        <Button type="link" style={{ padding: 0 }}>
+                        <Button
+                          onClick={() => setIsForgotPasswordVisible(true)}
+                        >
                           Forgot Password?
                         </Button>
                       </div>
@@ -407,6 +411,11 @@ const Login = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <ForgotPasswordModal
+        visible={isForgotPasswordVisible}
+        onClose={() => setIsForgotPasswordVisible(false)}
+      />
 
       <style>
         {`
