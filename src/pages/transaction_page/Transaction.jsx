@@ -164,7 +164,7 @@ const Transaction = () => {
             fontSize: "16px",
           }}
         >
-          {record.transactionType.toLowerCase() === "income" ? "₹" : "-₹"}
+          {record.transactionType.toLowerCase() === "income" ? "Rs." : "Rs."}
           {amount.toLocaleString()}
         </Text>
       ),
@@ -349,7 +349,7 @@ const Transaction = () => {
               title="Total Income"
               value={totalIncome}
               precision={2}
-              prefix="₹"
+              prefix="Rs."
               valueStyle={{ color: "#52C41A" }}
               suffix={<ArrowUpOutlined />}
             />
@@ -361,7 +361,7 @@ const Transaction = () => {
               title="Total Expense"
               value={totalExpense}
               precision={2}
-              prefix="₹"
+              prefix="Rs."
               valueStyle={{ color: "#ff4d4f" }}
               suffix={<ArrowDownOutlined />}
             />
@@ -373,7 +373,7 @@ const Transaction = () => {
               title="Balance"
               value={balance}
               precision={2}
-              prefix="₹"
+              prefix="Rs."
               valueStyle={{ color: balance >= 0 ? "#52C41A" : "#ff4d4f" }}
             />
           </Card>
@@ -466,7 +466,7 @@ const Transaction = () => {
             label="Amount"
             rules={[{ required: true, message: "Please input the amount!" }]}
           >
-            <Input type="number" prefix="₹" />
+            <Input type="number" prefix="Rs." />
           </Form.Item>
           <Form.Item
             name="type"

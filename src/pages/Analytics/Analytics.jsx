@@ -411,9 +411,9 @@ const FinancialAnalytics = () => {
               title="Projected Monthly Income"
               value={projectedData[projectedData.length - 1]?.income || 0}
               precision={2}
-              prefix="₹"
+              prefix="Rs."
               valueStyle={{ color: "#52c41a" }}
-              suffix={<RiseOutlined />}
+              
             />
           </Card>
         </Col>
@@ -423,9 +423,9 @@ const FinancialAnalytics = () => {
               title="Projected Monthly Expense"
               value={projectedData[projectedData.length - 1]?.expense || 0}
               precision={2}
-              prefix="₹"
+              prefix="Rs."
               valueStyle={{ color: "#f5222d" }}
-              suffix={<PercentageOutlined />}
+              
             />
           </Card>
         </Col>
@@ -435,7 +435,7 @@ const FinancialAnalytics = () => {
               title="Projected Savings"
               value={projectedData[projectedData.length - 1]?.savings || 0}
               precision={2}
-              prefix="₹"
+              prefix="Rs."
               valueStyle={{ color: "#1890ff" }}
               suffix={<DollarOutlined />}
             />

@@ -168,7 +168,7 @@ const Report = () => {
           <p className="mb-0">Month: {label}</p>
           {payload.map((p, index) => (
             <p key={index} style={{ color: p.color, margin: "4px 0" }}>
-              {p.name}: ₹{p.value.toLocaleString()}
+              {p.name}: Rs.{p.value.toLocaleString()}
             </p>
           ))}
         </Card>
@@ -188,7 +188,7 @@ const Report = () => {
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="month" padding={{ left: 20, right: 20 }} />
-        <YAxis tickFormatter={(value) => `₹${value / 1000}K`} />
+        <YAxis tickFormatter={(value) => `Rs.${value / 1000}K`} />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
         <DataComponent
@@ -261,7 +261,7 @@ const Report = () => {
               value={totalIncome}
               precision={2}
               valueStyle={{ color: "#52C41A" }}
-              prefix="₹"
+              prefix="Rs."
               suffix={<ArrowUpOutlined />}
             />
           </Card>
@@ -273,7 +273,7 @@ const Report = () => {
               value={totalExpense}
               precision={2}
               valueStyle={{ color: "#ff4d4f" }}
-              prefix="₹"
+              prefix="Rs."
               suffix={<ArrowDownOutlined />}
             />
           </Card>
@@ -285,7 +285,7 @@ const Report = () => {
               value={netSavings}
               precision={2}
               valueStyle={{ color: "#1890ff" }}
-              prefix="₹"
+              prefix="Rs."
               suffix={<WalletOutlined />}
             />
           </Card>

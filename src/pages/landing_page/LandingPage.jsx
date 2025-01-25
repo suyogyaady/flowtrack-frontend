@@ -18,20 +18,20 @@ const LandingPage = () => {
   const features = [
     {
       icon: <PieChart className="w-8 h-8" />,
-      title: "Expense Analytics",
-      description:
-        "Visualize your spending patterns with intuitive charts and graphs",
+      title: "Finance Management",
+      description: "Manage your expense and income with intuitive features",
     },
     {
       icon: <TrendingUp className="w-8 h-8" />,
-      title: "Budget Tracking",
+      title: "Financial Reports",
       description:
-        "Set and monitor budgets to reach your financial goals faster",
+        "Visualize your expense & income patterns and track your progress",
     },
     {
       icon: <Wallet className="w-8 h-8" />,
-      title: "Smart Savings",
-      description: "Intelligent suggestions to help you save more effectively",
+      title: "Analytics and Insights",
+      description:
+        "Project your financial status and review it in a meaningfull way",
     },
   ];
 
@@ -40,7 +40,11 @@ const LandingPage = () => {
       {/* Header */}
       <AppBar
         position="fixed"
-        sx={{ bgcolor: "grey.900", borderBottom: 1, borderColor: "grey.800" }}
+        sx={{
+          bgcolor: "grey.900",
+          borderBottom: 1,
+          borderColor: "grey.800",
+        }}
       >
         <Toolbar>
           <Container
@@ -49,27 +53,37 @@ const LandingPage = () => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              py: 1,
             }}
           >
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{ fontWeight: "bold" }}
-            >
-              FlowTrack
-            </Typography>
+            <Box
+              component="img"
+              src="/assets/images/LogoTextLight.png"
+              alt="FlowTrack Logo"
+              sx={{ height: 35 }}
+            />
             <Box sx={{ display: "flex", gap: 2 }}>
               <Button
                 variant="text"
                 onClick={() => navigate("/login")}
-                sx={{ color: "white" }}
+                sx={{
+                  color: "white",
+                  "&:hover": {
+                    color: "#4CAF50",
+                  },
+                }}
               >
                 Login
               </Button>
               <Button
                 variant="contained"
                 onClick={() => navigate("/signup")}
-                sx={{ bgcolor: "primary.main" }}
+                sx={{
+                  bgcolor: "#4CAF50",
+                  "&:hover": {
+                    bgcolor: "#45a049",
+                  },
+                }}
               >
                 Sign Up
               </Button>
@@ -79,23 +93,31 @@ const LandingPage = () => {
       </AppBar>
 
       {/* Main Content */}
-      <Box component="main" sx={{ pt: 8 }}>
+      <Box component="main" sx={{ pt: 10 }}>
         {/* Hero Section */}
-        <Box sx={{ bgcolor: "grey.900", py: 12 }}>
+        <Box sx={{ bgcolor: "grey.900", py: { xs: 8, md: 12 } }}>
           <Container maxWidth="lg">
-            <Box sx={{ textAlign: "center" }}>
+            <Box
+              sx={{
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <Typography
                 variant="h1"
                 sx={{
                   fontSize: { xs: "2.5rem", md: "3.75rem" },
                   fontWeight: "bold",
                   mb: 3,
+                  lineHeight: 1.2,
                 }}
               >
                 Track Your Finances with
-                <Box component="span" sx={{ color: "primary.main" }}>
+                <Box component="span" sx={{ color: "#4CAF50" }}>
                   {" "}
-                  Precision
+                  Flowtrack
                 </Box>
               </Typography>
               <Typography
@@ -103,7 +125,7 @@ const LandingPage = () => {
                 sx={{
                   color: "grey.400",
                   mb: 4,
-                  maxWidth: "xl",
+                  maxWidth: "800px",
                   mx: "auto",
                 }}
               >
@@ -115,7 +137,14 @@ const LandingPage = () => {
                 variant="contained"
                 size="large"
                 onClick={() => navigate("/signup")}
-                sx={{ height: 48, px: 4 }}
+                sx={{
+                  height: 48,
+                  px: 4,
+                  bgcolor: "#4CAF50",
+                  "&:hover": {
+                    bgcolor: "#45a049",
+                  },
+                }}
                 endIcon={<ArrowRight />}
               >
                 Get Started
@@ -125,23 +154,30 @@ const LandingPage = () => {
         </Box>
 
         {/* Features Section */}
-        <Box sx={{ bgcolor: "grey.800", py: 12 }}>
+        <Box sx={{ bgcolor: "grey.800", py: { xs: 8, md: 12 } }}>
           <Container maxWidth="lg">
-            <Grid container spacing={4}>
+            <Grid container spacing={4} alignItems="stretch">
               {features.map((feature, index) => (
                 <Grid item xs={12} md={4} key={index}>
                   <Paper
                     sx={{
                       bgcolor: "grey.700",
-                      p: 3,
+                      p: 4,
                       borderRadius: 2,
                       height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
                     }}
                   >
-                    <Box sx={{ color: "primary.main", mb: 2 }}>
-                      {feature.icon}
-                    </Box>
-                    <Typography variant="h5" sx={{ color: "white", mb: 2 }}>
+                    <Box sx={{ color: "#4CAF50" }}>{feature.icon}</Box>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: "white",
+                        fontWeight: "500",
+                      }}
+                    >
                       {feature.title}
                     </Typography>
                     <Typography sx={{ color: "grey.400" }}>
@@ -150,36 +186,6 @@ const LandingPage = () => {
                   </Paper>
                 </Grid>
               ))}
-            </Grid>
-          </Container>
-        </Box>
-
-        {/* Stats Section */}
-        <Box sx={{ bgcolor: "grey.900", py: 12 }}>
-          <Container maxWidth="lg">
-            <Grid container spacing={4} textAlign="center">
-              <Grid item xs={12} md={4}>
-                <Typography variant="h3" sx={{ color: "white", mb: 1 }}>
-                  50K+
-                </Typography>
-                <Typography sx={{ color: "grey.400" }}>Active Users</Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="h3" sx={{ color: "white", mb: 1 }}>
-                  $2M+
-                </Typography>
-                <Typography sx={{ color: "grey.400" }}>
-                  Tracked Monthly
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="h3" sx={{ color: "white", mb: 1 }}>
-                  98%
-                </Typography>
-                <Typography sx={{ color: "grey.400" }}>
-                  User Satisfaction
-                </Typography>
-              </Grid>
             </Grid>
           </Container>
         </Box>
@@ -193,11 +199,18 @@ const LandingPage = () => {
           borderTop: 1,
           borderColor: "grey.800",
           py: 3,
+          mt: "auto",
         }}
       >
         <Container maxWidth="lg">
-          <Typography align="center" sx={{ color: "grey.400" }}>
-            © 2025 FlowTrack. All rights reserved.
+          <Typography
+            align="center"
+            sx={{
+              color: "grey.400",
+              fontSize: "0.875rem",
+            }}
+          >
+            © 2025 FlowTrack.
           </Typography>
         </Container>
       </Box>

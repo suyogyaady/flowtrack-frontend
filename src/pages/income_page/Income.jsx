@@ -363,7 +363,7 @@ const Income = () => {
                 <List.Item
                   extra={
                     <Text strong style={{ color: getCategoryColor(item.name) }}>
-                      ${item.value.toLocaleString()}
+                      Rs.{item.value.toLocaleString()}
                     </Text>
                   }
                 >

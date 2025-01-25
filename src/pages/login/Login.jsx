@@ -29,6 +29,7 @@ import {
   loginWithGoogle,
 } from "../../apis/Api";
 import ForgotPasswordModal from "../../components/ForgotPassword";
+import { colors } from "@mui/material";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -269,6 +270,11 @@ const Login = () => {
                       <div style={{ textAlign: "right", marginBottom: 24 }}>
                         <Button
                           onClick={() => setIsForgotPasswordVisible(true)}
+                          style={{
+                            "&:hover": {
+                              color: "#28A648",
+                            },
+                          }}
                         >
                           Forgot Password?
                         </Button>
