@@ -400,9 +400,9 @@ const Login = () => {
 
           <Form.Item
             name="budget"
-            label="What's your monthly budget?"
+            label="What's your intital budget?"
             rules={[
-              { required: true, message: "Please enter your monthly budget" },
+              { required: true, message: "Please enter your initial budget" },
             ]}
           >
             <InputNumber
@@ -412,7 +412,7 @@ const Login = () => {
                 `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
               parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              placeholder="Enter your monthly budget"
+              placeholder="Enter your  budget"
             />
           </Form.Item>
         </Form>

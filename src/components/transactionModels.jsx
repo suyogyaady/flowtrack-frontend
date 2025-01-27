@@ -51,12 +51,6 @@ const TransactionModals = ({ onAdd }) => {
   };
 
   const handleIncomeSubmit = (values) => {
-    console.log("Income submitted:", {
-      ...values,
-      type: "income",
-      date: values.date.format("YYYY-MM-DD"),
-    });
-
     createIncomeApi({
       incomeName: values.name,
       incomeAmount: values.amount,
@@ -71,7 +65,7 @@ const TransactionModals = ({ onAdd }) => {
           IncomeID: res.data.data._id,
           transactionDate: values.date.format("YYYY-MM-DD"),
         })
-          .then((res) => {
+          .then(() => {
             message.success("Income added successfully!");
             incomeForm.resetFields();
             setIsIncomeModalOpen(false);
@@ -83,12 +77,6 @@ const TransactionModals = ({ onAdd }) => {
   };
 
   const handleExpenseSubmit = (values) => {
-    console.log("Expense submitted:", {
-      ...values,
-      type: "expense",
-      date: values.date.format("YYYY-MM-DD"),
-    });
-
     createExpenseApi({
       expenseName: values.name,
       expenseAmount: values.amount,
@@ -103,7 +91,7 @@ const TransactionModals = ({ onAdd }) => {
           IncomeID: null,
           transactionDate: values.date.format("YYYY-MM-DD"),
         })
-          .then((res) => {
+          .then(() => {
             message.success("Expense added successfully!");
             expenseForm.resetFields();
             setIsExpenseModalOpen(false);
@@ -141,15 +129,31 @@ const TransactionModals = ({ onAdd }) => {
       <Form.Item
         name="amount"
         label="Amount"
-        rules={[{ required: true, message: "Please enter an amount" }]}
+        validateFirst
+        rules={[
+          { required: true, message: "Please enter an amount" },
+          {
+            validator: (_, value) => {
+              if (value === undefined || value === null) {
+                return Promise.reject(new Error("Please enter an amount"));
+              }
+              if (value <= 0) {
+                return Promise.reject(
+                  new Error("Amount must be greater than 0")
+                );
+              }
+              return Promise.resolve();
+            },
+          },
+        ]}
       >
         <InputNumber
           style={{ width: "100%" }}
           formatter={(value) =>
-            `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            value ? `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
           }
           parser={(value) => value.replace(/Rs\.\s?|(,*)/g, "")}
-          min={0}
+          placeholder="Enter amount (e.g., 1000)"
         />
       </Form.Item>
 

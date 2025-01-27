@@ -30,6 +30,7 @@ const ExpenseModal = ({ open, onClose, onAdd }) => {
       "Other",
     ],
   };
+
   const handleExpenseSubmit = (values) => {
     createExpenseApi({
       expenseName: values.name,
@@ -92,22 +93,29 @@ const ExpenseModal = ({ open, onClose, onAdd }) => {
       <Form.Item
         name="amount"
         label="Amount"
+        validateFirst
         rules={[
           { required: true, message: "Please enter an amount" },
           {
-            validator: (_, value) =>
-              value > 0
-                ? Promise.resolve()
-                : Promise.reject(new Error("Amount must be greater than 0")),
+            validator: (_, value) => {
+              if (value <= 0) {
+                return Promise.reject(
+                  new Error("Negative or 0 cannot be entered")
+                );
+              }
+              return Promise.resolve();
+            },
           },
         ]}
       >
         <InputNumber
           style={{ width: "100%" }}
+          min={0.01} // Prevent negative values using the spinner
           formatter={(value) =>
             value ? `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
           }
           parser={(value) => value.replace(/Rs\.\s?|(,*)/g, "")}
+          placeholder="Enter amount (e.g., 1000)"
         />
       </Form.Item>
 
@@ -116,11 +124,14 @@ const ExpenseModal = ({ open, onClose, onAdd }) => {
         label="Date"
         rules={[{ required: true, message: "Please select a date" }]}
       >
-        <DatePicker style={{ width: "100%" }} />
+        <DatePicker style={{ width: "100%" }} placeholder="Select a date" />
       </Form.Item>
 
       <Form.Item name="notes" label="Notes">
-        <Input.TextArea rows={4} placeholder="Enter additional notes" />
+        <Input.TextArea
+          rows={4}
+          placeholder="Enter additional notes (optional)"
+        />
       </Form.Item>
     </>
   );
