@@ -84,7 +84,8 @@ const Login = () => {
     } catch (error) {
       console.error("Google login error:", error);
       message.error(
-        error.message || "Failed to login with Google. Please try again."
+        error.response.data.message ||
+          "Failed to login with Google. Please try again."
       );
       setLoading(false);
     }
@@ -116,7 +117,8 @@ const Login = () => {
     } catch (error) {
       console.error("Google login error:", error);
       message.error(
-        error.message || "Failed to login with Google. Please try again."
+        error.response.data.message ||
+          "Failed to login with Google. Please try again."
       );
     } finally {
       setLoading(false);
@@ -149,7 +151,7 @@ const Login = () => {
         ? "/admin/dashboard"
         : "/dashboard";
     } catch (error) {
-      message.error(error.message || "Login failed");
+      message.error(error.response.data.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -409,7 +411,7 @@ const Login = () => {
               style={{ width: "100%" }}
               min={0}
               formatter={(value) =>
-                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
               parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
               placeholder="Enter your  budget"

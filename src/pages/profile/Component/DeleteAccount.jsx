@@ -16,6 +16,7 @@ import {
   LockOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
+import { deleteAccountApi } from "../../../apis/Api";
 
 const { Text, Paragraph } = Typography;
 
@@ -67,24 +68,27 @@ const DeleteAccount = () => {
   };
 
   const handleDeleteAccount = async (values) => {
-    try {
-      setLoading(true);
-      // Add your delete account API call here
-      // await deleteAccountApi(values.password);
-
-      message.success({
-        content: "Account deletion process initiated successfully",
-        icon: <DeleteOutlined style={{ color: token.colorSuccess }} />,
+    setLoading(true);
+    // Add your delete account API call here
+    deleteAccountApi({
+      password: values.password,
+    })
+      .then((response) => {
+        message.success({
+          content: "Account deletion successfully",
+          icon: <DeleteOutlined style={{ color: token.colorSuccess }} />,
+        });
+        window.location.href = "/login";
+      })
+      .catch((error) => {
+        message.error({
+          content: error.response?.data?.message || "Failed to delete account",
+          icon: <DeleteOutlined style={{ color: token.colorError }} />,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
       });
-      form.resetFields();
-    } catch (error) {
-      message.error({
-        content: "Failed to delete account. Please try again.",
-        icon: <DeleteOutlined style={{ color: token.colorError }} />,
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (

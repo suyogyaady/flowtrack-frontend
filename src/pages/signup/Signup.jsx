@@ -62,11 +62,19 @@ const Signup = () => {
         throw new Error(response.data.message || "Registration failed.");
       }
     } catch (err) {
-      notification.error({
-        message: "Oops!",
-        description: err.message || "Something went wrong. Please try again.",
-        placement: "top",
-      });
+      if (err.response) {
+        notification.error({
+          message: "Oops!",
+          description: err.response.data.message || "Something went wrong.",
+          placement: "top",
+        });
+      } else {
+        notification.error({
+          message: "Oops!",
+          description: err.message || "Something went wrong. Please try again.",
+          placement: "top",
+        });
+      }
     } finally {
       setLoading(false);
     }

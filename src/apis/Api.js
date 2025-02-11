@@ -45,7 +45,8 @@ export const uploadProfilePictureApi = (data) =>
   Api.put("/api/user/upload_profile_picture", data, config);
 
 // Delete account api
-export const deleteAccountApi = () => Api.delete("/api/user/delete_account");
+export const deleteAccountApi = (data) =>
+  Api.put("/api/user/delete_account", data, jsonConfig);
 
 // change password api
 export const changePasswordApi = (data) =>

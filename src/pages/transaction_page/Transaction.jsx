@@ -367,17 +367,6 @@ const Transaction = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
-          <Card bordered={false}>
-            <Statistic
-              title="Balance"
-              value={balance}
-              precision={2}
-              prefix="Rs."
-              valueStyle={{ color: balance >= 0 ? "#52C41A" : "#ff4d4f" }}
-            />
-          </Card>
-        </Col>
       </Row>
 
       {/* Header Actions */}
